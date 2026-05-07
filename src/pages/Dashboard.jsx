@@ -4,6 +4,8 @@ import Agenda from '../components/Agenda'
 import Patients from '../components/Patients'
 import Facturation from '../components/Facturation'
 
+
+
 export default function Dashboard({ session }) {
   const [activePage, setActivePage] = useState('agenda')
 
@@ -46,7 +48,10 @@ export default function Dashboard({ session }) {
         {activePage === 'agenda' && <Agenda session={session} />}
         {activePage === 'patients' && <Patients session={session} />}
         {activePage === 'bilans' && <ComingSoon title="Bilans" />}
-        {activePage === 'facturation' && <ComingSoon title="Facturation" />}
+        {activePage === 'facturation' &&  <Facturation session={session} />}
+        
+
+
       </div>
     </div>
   )
