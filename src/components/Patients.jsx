@@ -256,16 +256,21 @@ export default function Patients({ session }) {
               ) : (
                 <div style={{display:'flex', flexDirection:'column', gap:8}}>
                   {patRdvs.map(r => (
-                    <div key={r.id} style={{...S.rdvItem, borderLeftColor: TYPES_COLOR[r.type]||'#185FA5'}}>
-                      <div style={S.rdvDate}>{r.date}</div>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:12, fontWeight:700, color: TYPES_COLOR[r.type]||'#185FA5'}}>
-                          {TYPES_LABEL[r.type]||r.type}
-                        </div>
-                        <div style={{fontSize:11, color:'#8A9BB0'}}>{r.motif||'—'}</div>
-                      </div>
-                      <div style={{fontSize:11, color:'#8A9BB0'}}>{r.duree} min</div>
-                    </div>
+                   <div key={r.id} style={{...S.rdvItem, borderLeftColor: TYPES_COLOR[r.type]||'#185FA5'}}>
+  <div style={S.rdvDate}>{r.date}</div>
+  <div style={{flex:1}}>
+    <div style={{fontSize:12, fontWeight:700, color: TYPES_COLOR[r.type]||'#185FA5'}}>
+      {TYPES_LABEL[r.type]||r.type}
+    </div>
+    <div style={{fontSize:11, color:'#8A9BB0'}}>{r.motif||'—'}</div>
+    {r.notes && (
+      <div style={{fontSize:11, color:'#4A6080', marginTop:3, fontStyle:'italic', lineHeight:1.5}}>
+        📝 {r.notes}
+      </div>
+    )}
+  </div>
+  <div style={{fontSize:11, color:'#8A9BB0', flexShrink:0}}>{r.duree} min</div>
+</div>
                   ))}
                 </div>
               )}

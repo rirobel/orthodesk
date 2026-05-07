@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../supabase'
 import Agenda from '../components/Agenda'
 import Patients from '../components/Patients'
+import Facturation from '../components/Facturation'
 
 export default function Dashboard({ session }) {
   const [activePage, setActivePage] = useState('agenda')
