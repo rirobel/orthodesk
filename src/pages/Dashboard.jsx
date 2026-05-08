@@ -4,6 +4,9 @@ import Agenda from '../components/Agenda'
 import Patients from '../components/Patients'
 import Facturation from '../components/Facturation'
 import Profil from '../components/Profil'
+import Bilans from '../components/Bilans'
+
+
 
 
 export default function Dashboard({ session }) {
@@ -46,10 +49,10 @@ export default function Dashboard({ session }) {
       {/* CONTENU */}
       <div style={styles.body}>
         {activePage === 'agenda' && <Agenda session={session} />}
-        {activePage === 'patients' && <Patients session={session} />}
-        {activePage === 'bilans' && <ComingSoon title="Bilans" />}
+        {activePage === 'patients' && <Patients session={session} />}        
         {activePage === 'facturation' &&  <Facturation session={session} />}
-        {activePage === 'profil' && <Profil session={session} />}
+        {activePage === 'profil' && <Profil session={session} />}        
+        {activePage === 'bilans' && <Bilans session={session} />}  
         
 
 
