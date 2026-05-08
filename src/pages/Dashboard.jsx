@@ -3,7 +3,7 @@ import { supabase } from '../supabase'
 import Agenda from '../components/Agenda'
 import Patients from '../components/Patients'
 import Facturation from '../components/Facturation'
-
+import Profil from '../components/Profil'
 
 
 export default function Dashboard({ session }) {
@@ -29,7 +29,7 @@ export default function Dashboard({ session }) {
         </div>
 
         <div style={styles.navTabs}>
-          {['agenda','patients','bilans','facturation'].map(page => (
+          {['agenda','patients','bilans','facturation','profil'].map(page => (
             <button key={page} style={{...styles.navTab, ...(activePage===page ? styles.navTabActive : {})}}
               onClick={() => setActivePage(page)}>
               {page.charAt(0).toUpperCase() + page.slice(1)}
@@ -49,6 +49,7 @@ export default function Dashboard({ session }) {
         {activePage === 'patients' && <Patients session={session} />}
         {activePage === 'bilans' && <ComingSoon title="Bilans" />}
         {activePage === 'facturation' &&  <Facturation session={session} />}
+        {activePage === 'profil' && <Profil session={session} />}
         
 
 
