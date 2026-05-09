@@ -459,195 +459,308 @@ export default function Bilans({ session }) {
     load()
   }
 
-  // ─── Export PDF ────────────────────────────────────────────────────────────
-  function exportPDF(bilan) {
-    const template  = templates.find(t => t.id === bilan.template_id)
-    const patient   = bilan.patients
-    const patNom    = patient ? `${patient.prenom} ${patient.nom}` : '—'
-    const sections  = template?.sections || []
-    const donnees   = bilan.donnees || {}
+  // ─── Export PDF (jsPDF + AutoTable) ────────────────────────────────────────
+  async function exportPDF(bilan) {
+    // Chargement jsPDF depuis CDN si pas encore présent
+    if (!window.jspdf) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+        script.onload = resolve
+        script.onerror = reject
+        document.head.appendChild(script)
+      })
+    }
+    // Chargement autoTable depuis CDN
+    if (!window.jspdf?.jsPDF?.API?.autoTable) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'
+        script.onload = resolve
+        script.onerror = reject
+        document.head.appendChild(script)
+      })
+    }
+
+    const { jsPDF } = window.jspdf
+    const template   = templates.find(t => t.id === bilan.template_id)
+    const patient    = bilan.patients
+    const patNom     = patient ? `${patient.prenom} ${patient.nom}` : '—'
+    const sections   = template?.sections || []
+    const donnees    = bilan.donnees || {}
     const orthoEmail = session?.user?.email || ''
 
-    // Construit le HTML des sections
-    let sectionsHTML = ''
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+    const PW = 210  // largeur page A4
+    const ML = 14   // marge gauche
+    const MR = 14   // marge droite
+    const CW = PW - ML - MR  // largeur contenu
+    let y = 14
+
+    // Couleurs
+    const BLEU    = [12, 68, 124]
+    const GRIS    = [138, 155, 176]
+    const NOIR    = [26, 39, 68]
+    const VERT    = [29, 122, 90]
+    const ROUGE   = [192, 57, 43]
+    const BGGRIS  = [240, 244, 249]
+
+    // ── En-tête ──────────────────────────────────────────────
+    // Barre bleue top
+    doc.setFillColor(...BLEU)
+    doc.rect(0, 0, PW, 1.5, 'F')
+
+    // Titre gauche
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(16)
+    doc.setTextColor(...BLEU)
+    doc.text('Bilan Orthophonique', ML, y + 6)
+
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.setTextColor(...GRIS)
+    doc.text(template?.nom || '', ML, y + 11)
+
+    // Infos ortho à droite
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(...BLEU)
+    doc.text('Orthophoniste R. Bellali', PW - MR, y + 4, { align: 'right' })
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...GRIS)
+    doc.text(orthoEmail, PW - MR, y + 8, { align: 'right' })
+    doc.text('orthodesk.vercel.app', PW - MR, y + 12, { align: 'right' })
+
+    y += 16
+    // Ligne séparatrice
+    doc.setDrawColor(...BLEU)
+    doc.setLineWidth(0.4)
+    doc.line(ML, y, PW - MR, y)
+    y += 5
+
+    // ── Bloc patient ──────────────────────────────────────────
+    doc.setFillColor(...BGGRIS)
+    doc.roundedRect(ML, y, CW, 18, 2, 2, 'F')
+
+    const cols4 = CW / 4
+    const labels = ['Patient', 'Pathologie', 'Date du bilan', 'Statut']
+    const vals   = [patNom, template?.pathologie || '—', fmtDate(bilan.date), bilan.statut]
+
+    labels.forEach((lbl, i) => {
+      const x = ML + i * cols4 + 3
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(7)
+      doc.setTextColor(...GRIS)
+      doc.text(lbl.toUpperCase(), x, y + 5)
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.setTextColor(...NOIR)
+      // Tronquer si trop long
+      const maxW = cols4 - 4
+      const txt  = doc.splitTextToSize(vals[i], maxW)[0]
+      doc.text(txt, x, y + 11)
+    })
+    y += 23
+
+    // ── Sections ──────────────────────────────────────────────
     sections.forEach(section => {
       const champs = section.champs || []
-      let lignes = ''
 
+      // Vérifier s'il y a des données dans cette section
+      const hasDonnees = champs.some(c => {
+        const v = donnees[c.id]
+        return v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && !v.length)
+      })
+      if (!hasDonnees) return
+
+      // Saut de page si nécessaire (laisser 30mm en bas)
+      if (y > 260) { doc.addPage(); y = 14 }
+
+      // Titre section
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.setTextColor(...GRIS)
+      doc.text(section.titre.toUpperCase(), ML, y)
+      doc.setDrawColor(...GRIS)
+      doc.setLineWidth(0.2)
+      doc.line(ML, y + 1, PW - MR, y + 1)
+      y += 5
+
+      // ── Grille OUI/NON ────────────────────────────────────
       if (section.type_section === 'grille_oui_non') {
+        const rows = []
         champs.forEach(c => {
           const v = donnees[c.id]
           if (!v) return
-          const color = v === 'Oui' ? '#1D7A5A' : '#C0392B'
-          lignes += `<tr>
-            <td style="padding:5px 8px;font-size:12px;color:#1A2744;border-bottom:1px solid #F0F4F9">${c.label}</td>
-            <td style="padding:5px 8px;font-size:12px;font-weight:700;color:${color};text-align:right;border-bottom:1px solid #F0F4F9">${v}</td>
-          </tr>`
+          rows.push([c.label, v])
         })
-        if (!lignes) return
-        sectionsHTML += `
-          <div class="section">
-            <div class="section-title">${section.titre}</div>
-            <table style="width:100%">${lignes}</table>
-          </div>`
+        if (!rows.length) return
 
+        doc.autoTable({
+          startY: y,
+          margin: { left: ML, right: MR },
+          head: [],
+          body: rows,
+          columnStyles: {
+            0: { cellWidth: CW * 0.78, fontSize: 9, textColor: NOIR },
+            1: { cellWidth: CW * 0.22, fontSize: 9, fontStyle: 'bold', halign: 'center' },
+          },
+          didParseCell(data) {
+            if (data.column.index === 1) {
+              const v = data.cell.raw
+              data.cell.styles.textColor = v === 'Oui' ? VERT : ROUGE
+            }
+          },
+          alternateRowStyles: { fillColor: [248, 250, 252] },
+          styles: { cellPadding: 2.5, lineColor: [240, 244, 249], lineWidth: 0.1 },
+          theme: 'grid',
+        })
+        y = doc.lastAutoTable.finalY + 6
+
+      // ── Tableau phonèmes ──────────────────────────────────
       } else if (section.type_section === 'tableau_phonemes' || section.type_section === 'tableau_phonemes_tsa') {
         const deuxCols = section.type_section === 'tableau_phonemes_tsa'
-        const colHeaders = deuxCols ? ['Avec lecture labiale', 'Sans lecture labiale'] : ['+', '−']
-        let rows = ''
-        champs.forEach((c, i) => {
+        const colH = deuxCols ? ['Phonème', 'Avec lecture labiale', 'Sans lecture labiale'] : ['Phonème', '+', '−']
+        const rows = []
+
+        champs.forEach(c => {
           const v = donnees[c.id]
           if (!v || (typeof v === 'object' && !Object.values(v).some(Boolean))) return
-          let col1 = '—', col2 = '—'
           if (deuxCols) {
-            col1 = (v && v.avec) || '—'; col2 = (v && v.sans) || '—'
+            rows.push([c.label, (v && v.avec) || '—', (v && v.sans) || '—'])
           } else {
-            col1 = (v && v['+']) ? '+' : '—'; col2 = (v && v['-']) ? '−' : '—'
+            rows.push([c.label, (v && v['+']) ? '+' : '—', (v && v['-']) ? '−' : '—'])
           }
-          rows += `<tr style="background:${i%2===0?'#F8FAFC':'#fff'}">
-            <td style="padding:4px 8px;font-weight:700;color:#0C447C;font-size:12px">${c.label}</td>
-            <td style="padding:4px 8px;text-align:center;font-size:12px;color:${col1==='+'?'#1D7A5A':col1==='−'?'#C0392B':'#999'}">${col1}</td>
-            <td style="padding:4px 8px;text-align:center;font-size:12px;color:${col2==='+'?'#1D7A5A':col2==='−'?'#C0392B':'#999'}">${col2}</td>
-          </tr>`
         })
-        if (!rows) return
-        sectionsHTML += `
-          <div class="section">
-            <div class="section-title">${section.titre}</div>
-            <table style="width:100%;border-collapse:collapse">
-              <thead><tr style="background:#F0F4F9">
-                <th style="padding:6px 8px;font-size:11px;text-align:left;color:#8A9BB0">Phonème</th>
-                <th style="padding:6px 8px;font-size:11px;color:#8A9BB0">${colHeaders[0]}</th>
-                <th style="padding:6px 8px;font-size:11px;color:#8A9BB0">${colHeaders[1]}</th>
-              </tr></thead>
-              <tbody>${rows}</tbody>
-            </table>
-          </div>`
+        if (!rows.length) return
 
+        // Afficher en 3 colonnes côte à côte pour gagner de la place
+        const chunk = 12
+        for (let i = 0; i < rows.length; i += chunk * 3) {
+          const part1 = rows.slice(i, i + chunk)
+          const part2 = rows.slice(i + chunk, i + chunk * 2)
+          const part3 = rows.slice(i + chunk * 2, i + chunk * 3)
+          const maxLen = Math.max(part1.length, part2.length, part3.length)
+          const merged = []
+          for (let j = 0; j < maxLen; j++) {
+            const r1 = part1[j] || ['', '', '']
+            const r2 = part2[j] || ['', '', '']
+            const r3 = part3[j] || ['', '', '']
+            merged.push([r1[0], r1[1], r1[2], r2[0], r2[1], r2[2], r3[0], r3[1], r3[2]])
+          }
+          const cw = CW / 3
+          doc.autoTable({
+            startY: y,
+            margin: { left: ML, right: MR },
+            head: [[colH[0], colH[1], colH[2], colH[0], colH[1], colH[2], colH[0], colH[1], colH[2]]],
+            body: merged,
+            headStyles: { fillColor: BGGRIS, textColor: GRIS, fontSize: 7, fontStyle: 'bold' },
+            columnStyles: {
+              0: { cellWidth: cw * 0.4, fontSize: 9, fontStyle: 'bold', textColor: BLEU },
+              1: { cellWidth: cw * 0.3, fontSize: 9, halign: 'center' },
+              2: { cellWidth: cw * 0.3, fontSize: 9, halign: 'center' },
+              3: { cellWidth: cw * 0.4, fontSize: 9, fontStyle: 'bold', textColor: BLEU },
+              4: { cellWidth: cw * 0.3, fontSize: 9, halign: 'center' },
+              5: { cellWidth: cw * 0.3, fontSize: 9, halign: 'center' },
+              6: { cellWidth: cw * 0.4, fontSize: 9, fontStyle: 'bold', textColor: BLEU },
+              7: { cellWidth: cw * 0.3, fontSize: 9, halign: 'center' },
+              8: { cellWidth: cw * 0.3, fontSize: 9, halign: 'center' },
+            },
+            didParseCell(data) {
+              const col = data.column.index
+              if ([1, 2, 4, 5, 7, 8].includes(col)) {
+                const v = data.cell.raw
+                if (v === '+') data.cell.styles.textColor = VERT
+                else if (v === '−') data.cell.styles.textColor = ROUGE
+              }
+            },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+            styles: { cellPadding: 2, lineColor: [240, 244, 249], lineWidth: 0.1 },
+            theme: 'grid',
+          })
+          y = doc.lastAutoTable.finalY + 4
+        }
+        y += 2
+
+      // ── Champs standard ───────────────────────────────────
       } else {
         champs.forEach(c => {
           const v = donnees[c.id]
           if (v === undefined || v === null || v === '') return
           const display = Array.isArray(v) ? v.join(', ') : String(v)
-          lignes += `<div style="margin-bottom:8px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#8A9BB0;margin-bottom:2px">${c.label}</div>
-            <div style="font-size:12px;color:#1A2744;line-height:1.6">${display}</div>
-          </div>`
+
+          if (y > 270) { doc.addPage(); y = 14 }
+
+          // Label
+          doc.setFont('helvetica', 'bold')
+          doc.setFontSize(7.5)
+          doc.setTextColor(...GRIS)
+          doc.text(c.label.toUpperCase(), ML, y)
+          y += 3.5
+
+          // Valeur (multiligne si textarea)
+          doc.setFont('helvetica', 'normal')
+          doc.setFontSize(9.5)
+          doc.setTextColor(...NOIR)
+          const lines = doc.splitTextToSize(display, CW)
+          lines.forEach(line => {
+            if (y > 275) { doc.addPage(); y = 14 }
+            doc.text(line, ML, y)
+            y += 4.5
+          })
+          y += 2
         })
-        if (!lignes) return
-        sectionsHTML += `
-          <div class="section">
-            <div class="section-title">${section.titre}</div>
-            ${lignes}
-          </div>`
+        y += 2
       }
     })
 
-    const conclusionHTML = bilan.conclusion ? `
-      <div class="section" style="border-left:3px solid #0C447C;padding-left:14px">
-        <div class="section-title">Conclusion</div>
-        <div style="font-size:12px;color:#1A2744;line-height:1.8;white-space:pre-wrap">${bilan.conclusion}</div>
-      </div>` : ''
+    // ── Conclusion ────────────────────────────────────────────
+    if (bilan.conclusion) {
+      if (y > 240) { doc.addPage(); y = 14 }
 
-    const html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8"/>
-  <title>Bilan — ${patNom}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1A2744; background: #fff; font-size: 13px; }
-    @page { size: A4; margin: 18mm 16mm; }
-    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+      // Barre latérale bleue
+      doc.setFillColor(...BLEU)
+      const concluLines = doc.splitTextToSize(bilan.conclusion, CW - 6)
+      const concluH = concluLines.length * 5 + 14
+      doc.rect(ML, y - 2, 1.5, concluH, 'F')
 
-    /* En-tête */
-    .header { display: flex; justify-content: space-between; align-items: flex-start;
-      padding-bottom: 14px; border-bottom: 2px solid #0C447C; margin-bottom: 18px; }
-    .header-left h1 { font-family: Georgia, serif; font-size: 18px; color: #0C447C; }
-    .header-left p  { font-size: 11px; color: #8A9BB0; margin-top: 2px; }
-    .header-right   { text-align: right; font-size: 11px; color: #4A6080; line-height: 1.7; }
-    .header-right strong { color: #0C447C; }
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.setTextColor(...GRIS)
+      doc.text('CONCLUSION', ML + 5, y + 2)
 
-    /* Bloc patient */
-    .patient-bloc { display: flex; gap: 24px; background: #F0F4F9; border-radius: 8px;
-      padding: 12px 16px; margin-bottom: 18px; }
-    .patient-bloc .field { flex: 1; }
-    .patient-bloc .field-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.06em; color: #8A9BB0; margin-bottom: 2px; }
-    .patient-bloc .field-value { font-size: 13px; color: #1A2744; font-weight: 600; }
+      doc.setDrawColor(...GRIS)
+      doc.setLineWidth(0.2)
+      doc.line(ML + 5, y + 3, PW - MR, y + 3)
+      y += 7
 
-    /* Badge statut */
-    .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 10px;
-      font-weight: 700; background: ${bilan.statut==='finalisé'?'#E8F5EE':'#FEF3E2'};
-      color: ${bilan.statut==='finalisé'?'#1D7A5A':'#8B5A00'}; }
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(9.5)
+      doc.setTextColor(...NOIR)
+      concluLines.forEach(line => {
+        if (y > 278) { doc.addPage(); y = 14 }
+        doc.text(line, ML + 5, y)
+        y += 5
+      })
+    }
 
-    /* Sections */
-    .section { margin-bottom: 16px; page-break-inside: avoid; }
-    .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.08em; color: #8A9BB0; margin-bottom: 8px;
-      padding-bottom: 4px; border-bottom: 1px solid #DDE5EF; }
+    // ── Pied de page sur toutes les pages ─────────────────────
+    const nbPages = doc.getNumberOfPages()
+    for (let i = 1; i <= nbPages; i++) {
+      doc.setPage(i)
+      doc.setFillColor(...BLEU)
+      doc.rect(0, 290, PW, 7, 'F')
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(255, 255, 255)
+      doc.text(`OrthoDesk · Généré le ${new Date().toLocaleDateString('fr-FR')}`, ML, 294.5)
+      doc.text(`${patNom} · ${template?.pathologie || ''} · Page ${i}/${nbPages}`, PW - MR, 294.5, { align: 'right' })
+    }
 
-    /* Pied de page */
-    .footer { margin-top: 24px; padding-top: 10px; border-top: 1px solid #DDE5EF;
-      display: flex; justify-content: space-between; font-size: 10px; color: #B0BBCC; }
-  </style>
-</head>
-<body>
-
-  <!-- EN-TÊTE -->
-  <div class="header">
-    <div class="header-left">
-      <h1>Bilan Orthophonique</h1>
-      <p>${template?.nom || ''}</p>
-    </div>
-    <div class="header-right">
-      <strong>Orthophoniste R. Bellali</strong><br/>
-      ${orthoEmail}<br/>
-      OrthoDesk · orthodesk.vercel.app
-    </div>
-  </div>
-
-  <!-- PATIENT -->
-  <div class="patient-bloc">
-    <div class="field">
-      <div class="field-label">Patient</div>
-      <div class="field-value">${patNom}</div>
-    </div>
-    <div class="field">
-      <div class="field-label">Pathologie</div>
-      <div class="field-value">${template?.pathologie || '—'}</div>
-    </div>
-    <div class="field">
-      <div class="field-label">Date du bilan</div>
-      <div class="field-value">${fmtDate(bilan.date)}</div>
-    </div>
-    <div class="field">
-      <div class="field-label">Statut</div>
-      <div class="field-value"><span class="badge">${bilan.statut}</span></div>
-    </div>
-  </div>
-
-  <!-- SECTIONS -->
-  ${sectionsHTML}
-
-  <!-- CONCLUSION -->
-  ${conclusionHTML}
-
-  <!-- PIED DE PAGE -->
-  <div class="footer">
-    <span>Généré via OrthoDesk · ${new Date().toLocaleDateString('fr-FR')}</span>
-    <span>${patNom} · ${template?.pathologie || ''}</span>
-  </div>
-
-</body>
-</html>`
-
-    // Ouvre dans un nouvel onglet et déclenche l'impression
-    const win = window.open('', '_blank')
-    win.document.write(html)
-    win.document.close()
-    win.focus()
-    setTimeout(() => { win.print() }, 400)
+    // ── Téléchargement ────────────────────────────────────────
+    const filename = `Bilan_${patNom.replace(/ /g, '_')}_${bilan.date}.pdf`
+    doc.save(filename)
   }
 
   // Filtrage

@@ -5,13 +5,15 @@ import Patients from '../components/Patients'
 import Facturation from '../components/Facturation'
 import Profil from '../components/Profil'
 import Bilans from '../components/Bilans'
+import { RGPDModal } from '../components/RGPD'
+import Statistiques from '../components/Statistiques'
 
 
 
 
 export default function Dashboard({ session }) {
   const [activePage, setActivePage] = useState('agenda')
-
+  const [showRGPD, setShowRGPD] = useState(false)
   async function handleLogout() {
     await supabase.auth.signOut()
   }
@@ -32,7 +34,7 @@ export default function Dashboard({ session }) {
         </div>
 
         <div style={styles.navTabs}>
-          {['agenda','patients','bilans','facturation','profil'].map(page => (
+          {['agenda','patients','bilans','facturation','profil','stats'].map(page => (
             <button key={page} style={{...styles.navTab, ...(activePage===page ? styles.navTabActive : {})}}
               onClick={() => setActivePage(page)}>
               {page.charAt(0).toUpperCase() + page.slice(1)}
@@ -42,6 +44,12 @@ export default function Dashboard({ session }) {
 
         <div style={styles.navRight}>
           <span style={styles.userEmail}>{session.user.email}</span>
+         
+          <span style={{ fontSize:11, color:'#B0BBCC', cursor:'pointer', textDecoration:'underline' }}
+            onClick={() => setShowRGPD(true)}>
+            Confidentialité & RGPD            
+          </span>          
+          {showRGPD && <RGPDModal onClose={() => setShowRGPD(false)} />}
           <button style={styles.logoutBtn} onClick={handleLogout}>Déconnexion</button>
         </div>
       </nav>
@@ -53,6 +61,7 @@ export default function Dashboard({ session }) {
         {activePage === 'facturation' &&  <Facturation session={session} />}
         {activePage === 'profil' && <Profil session={session} />}        
         {activePage === 'bilans' && <Bilans session={session} />}  
+        {activePage === 'stats' && <Statistiques session={session} />}
         
 
 
