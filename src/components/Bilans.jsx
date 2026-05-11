@@ -186,6 +186,18 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
   const [conclusion, setConclusion] = useState(bilan?.conclusion || '')
   const [saving, setSaving]   = useState(false)
 
+  function useIsMobile() {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
+    useEffect(() => {
+      const handler = () => setIsMobile(window.innerWidth < 700)
+      window.addEventListener('resize', handler)
+      return () => window.removeEventListener('resize', handler)
+    }, [])
+    return isMobile
+  }
+
+  const isMobile = useIsMobile()
+
   const template = templates.find(t => t.id === Number(templateId))
   const sections = template?.sections || []
   const totalSteps = sections.length + 2 // 0=config, 1..n=sections, n+1=conclusion
@@ -433,7 +445,7 @@ export default function Bilans({ session }) {
   function useIsMobile() {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
     useEffect(() => {
-      const handler = async () => setIsMobile(window.innerWidth < 700)
+      const handler = () => setIsMobile(window.innerWidth < 700)
       window.addEventListener('resize', handler)
       return () => window.removeEventListener('resize', handler)
     }, [])
