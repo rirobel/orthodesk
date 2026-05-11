@@ -29,6 +29,18 @@ export default function Agenda({ session }) {
   const [selType, setSelType]     = useState('bilan')
   const [popup, setPopup]         = useState(null)
 
+  function useIsMobile() {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
+    useEffect(() => {
+      const handler = () => setIsMobile(window.innerWidth < 700)
+      window.addEventListener('resize', handler)
+      return () => window.removeEventListener('resize', handler)
+    }, [])
+    return isMobile
+  }
+
+  const isMobile = useIsMobile()
+
   useEffect(() => { fetchRdvs(); fetchPatients() }, [])
 
   async function fetchRdvs() {
