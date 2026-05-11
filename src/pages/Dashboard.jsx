@@ -7,6 +7,7 @@ import Profil from '../components/Profil'
 import Bilans from '../components/Bilans'
 import { RGPDModal } from '../components/RGPD'
 import Statistiques from '../components/Statistiques'
+import './Dashboard.css'
 
 
 
@@ -14,48 +15,53 @@ import Statistiques from '../components/Statistiques'
 export default function Dashboard({ session }) {
   const [activePage, setActivePage] = useState('agenda')
   const [showRGPD, setShowRGPD] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   async function handleLogout() {
     await supabase.auth.signOut()
   }
 
   return (
-    <div style={styles.app}>
+    <div className="app">
       {/* NAV */}
-      <nav style={styles.nav}>
-        <div style={styles.logo}>
-          <div style={styles.logoMark}>
+      <nav className="nav">
+        <div className="logo">
+          <div className="logoMark">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <ellipse cx="10" cy="10" rx="7" ry="6" stroke="#0C447C" strokeWidth="1.5"/>
               <path d="M10 4Q13 6 13 10Q13 14 10 16" stroke="#0C447C" strokeWidth="1.2" strokeLinecap="round"/>
               <path d="M7 5Q5 8 6 11Q7 14 9 15" stroke="#0C447C" strokeWidth="1" strokeLinecap="round"/>
             </svg>
           </div>
-          <span style={styles.logoText}>Ortho<span style={{color:'#C9A84C'}}>Desk</span></span>
+          <span className="logoText">Ortho<span style={{color:'#C9A84C'}}>Desk</span></span>
         </div>
 
-        <div style={styles.navTabs}>
+        <button className={`hamburgerBtn ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Ouvrir le menu">
+          ☰
+        </button>
+
+        <div className={`navTabs ${menuOpen ? 'mobileOpen' : ''}`}>
           {['agenda','patients','bilans','facturation','profil','stats'].map(page => (
-            <button key={page} style={{...styles.navTab, ...(activePage===page ? styles.navTabActive : {})}}
-              onClick={() => setActivePage(page)}>
+            <button key={page} className={`navTab ${activePage === page ? 'navTabActive' : ''}`}
+              onClick={() => { setActivePage(page); setMenuOpen(false) }}>
               {page.charAt(0).toUpperCase() + page.slice(1)}
             </button>
           ))}
         </div>
 
-        <div style={styles.navRight}>
-          <span style={styles.userEmail}>{session.user.email}</span>
+        <div className={`navRight ${menuOpen ? 'mobileOpen' : ''}`}>
+          <span className="userEmail">{session.user.email}</span>
          
           <span style={{ fontSize:11, color:'#B0BBCC', cursor:'pointer', textDecoration:'underline' }}
-            onClick={() => setShowRGPD(true)}>
+            onClick={() => { setShowRGPD(true); setMenuOpen(false) }}>
             Confidentialité & RGPD            
           </span>          
           {showRGPD && <RGPDModal onClose={() => setShowRGPD(false)} />}
-          <button style={styles.logoutBtn} onClick={handleLogout}>Déconnexion</button>
+          <button className="logoutBtn" onClick={() => { setMenuOpen(false); handleLogout() }}>Déconnexion</button>
         </div>
       </nav>
 
       {/* CONTENU */}
-      <div style={styles.body}>
+      <div className="body">
         {activePage === 'agenda' && <Agenda session={session} />}
         {activePage === 'patients' && <Patients session={session} />}        
         {activePage === 'facturation' &&  <Facturation session={session} />}
@@ -78,19 +84,4 @@ function ComingSoon({ title }) {
       <div style={{fontSize:'13px'}}>Module en cours de développement</div>
     </div>
   )
-}
-
-const styles = {
-  app: { height:'100vh', display:'flex', flexDirection:'column', background:'#F0F4F9' },
-  nav: { background:'#0C447C', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 24px', height:'58px', flexShrink:0 },
-  logo: { display:'flex', alignItems:'center', gap:'10px' },
-  logoMark: { width:'34px', height:'34px', background:'#C9A84C', borderRadius:'9px', display:'flex', alignItems:'center', justifyContent:'center' },
-  logoText: { fontFamily:'Georgia, serif', fontSize:'18px', color:'#fff' },
-  navTabs: { display:'flex', gap:'2px' },
-  navTab: { padding:'6px 14px', borderRadius:'7px', fontSize:'13px', fontWeight:'500', color:'rgba(255,255,255,0.6)', cursor:'pointer', border:'none', background:'none', fontFamily:'DM Sans, sans-serif', transition:'all .15s' },
-  navTabActive: { color:'#0C447C', background:'#C9A84C' },
-  navRight: { display:'flex', alignItems:'center', gap:'12px' },
-  userEmail: { fontSize:'12px', color:'rgba(255,255,255,0.6)' },
-  logoutBtn: { padding:'5px 12px', background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'7px', color:'#fff', fontSize:'12px', cursor:'pointer', fontFamily:'DM Sans, sans-serif' },
-  body: { flex:1, overflow:'hidden', display:'flex' },
 }

@@ -135,6 +135,21 @@ function SectionTitle({ children }) {
   )
 }
 
+const S = {
+  wrap:            { flex: 1, overflowY: 'auto', background: '#F0F4F9', fontFamily: 'DM Sans, sans-serif' },
+  pageHeader:      { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 0', flexWrap: 'wrap', gap: 12 },
+  pageTitle:       { fontFamily: 'Georgia, serif', fontSize: 22, color: '#0C447C', fontWeight: 700 },
+  pageSub:         { fontSize: 12, color: '#8A9BB0', marginTop: 2 },
+  periodeBar:      { display: 'flex', gap: 4, background: '#fff', padding: 4, borderRadius: 10, boxShadow: '0 1px 6px rgba(12,68,124,0.08)' },
+  periodeBtn:      { padding: '5px 14px', borderRadius: 7, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'none', color: '#8A9BB0', fontFamily: 'DM Sans, sans-serif' },
+  periodeBtnActive:{ background: '#0C447C', color: '#fff' },
+  content:         { padding: '16px 24px 32px', display: 'flex', flexDirection: 'column', gap: 16 },
+  kpiGrid:         { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 4 },
+  kpiCard:         { background: '#fff', borderRadius: 12, padding: '16px 18px', boxShadow: '0 2px 12px rgba(12,68,124,0.07)' },
+  chartCard:       { background: '#fff', borderRadius: 12, padding: '16px 18px', boxShadow: '0 2px 12px rgba(12,68,124,0.07)' },
+  empty:           { fontSize: 12, color: '#B0BBCC', fontStyle: 'italic', padding: '12px 0' },
+}
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 export default function Statistiques({ session }) {
   const [patients, setPatients]   = useState([])
@@ -143,6 +158,22 @@ export default function Statistiques({ session }) {
   const [bilans, setBilans]       = useState([])
   const [loading, setLoading]     = useState(true)
   const [periode, setPeriode]     = useState('6m') // 3m | 6m | 12m | all
+
+  function useIsMobile() {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
+    useEffect(() => {
+      const handler = async () => setIsMobile(window.innerWidth < 700)
+      window.addEventListener('resize', handler)
+      return () => window.removeEventListener('resize', handler)
+    }, [])
+    return isMobile
+  }
+
+  const isMobile = useIsMobile()
+  const styles = {
+    ...S,
+    chartsGrid: { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 },
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -330,7 +361,7 @@ export default function Statistiques({ session }) {
         </div>
 
         {/* ── GRAPHES ── */}
-        <div style={S.chartsGrid}>
+        <div style={styles.chartsGrid}>
 
           {/* Séances par mois */}
           <div style={S.chartCard}>
@@ -347,7 +378,7 @@ export default function Statistiques({ session }) {
         </div>
 
         {/* ── RÉPARTITIONS ── */}
-        <div style={S.chartsGrid}>
+        <div style={styles.chartsGrid}>
 
           {/* Types séances */}
           <div style={S.chartCard}>
@@ -396,7 +427,7 @@ export default function Statistiques({ session }) {
         </div>
 
         {/* ── MOTIFS + ÂGES ── */}
-        <div style={S.chartsGrid}>
+        <div style={styles.chartsGrid}>
 
           {/* Motifs principaux */}
           <div style={S.chartCard}>
@@ -442,7 +473,7 @@ export default function Statistiques({ session }) {
         </div>
 
         {/* ── TOP PATIENTS + BILANS ── */}
-        <div style={S.chartsGrid}>
+        <div style={styles.chartsGrid}>
 
           {/* Top patients */}
           <div style={S.chartCard}>
@@ -536,21 +567,4 @@ export default function Statistiques({ session }) {
       </div>
     </div>
   )
-}
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const S = {
-  wrap:            { flex: 1, overflowY: 'auto', background: '#F0F4F9', fontFamily: 'DM Sans, sans-serif' },
-  pageHeader:      { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 0', flexWrap: 'wrap', gap: 12 },
-  pageTitle:       { fontFamily: 'Georgia, serif', fontSize: 22, color: '#0C447C', fontWeight: 700 },
-  pageSub:         { fontSize: 12, color: '#8A9BB0', marginTop: 2 },
-  periodeBar:      { display: 'flex', gap: 4, background: '#fff', padding: 4, borderRadius: 10, boxShadow: '0 1px 6px rgba(12,68,124,0.08)' },
-  periodeBtn:      { padding: '5px 14px', borderRadius: 7, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'none', color: '#8A9BB0', fontFamily: 'DM Sans, sans-serif' },
-  periodeBtnActive:{ background: '#0C447C', color: '#fff' },
-  content:         { padding: '16px 24px 32px', display: 'flex', flexDirection: 'column', gap: 16 },
-  kpiGrid:         { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 4 },
-  kpiCard:         { background: '#fff', borderRadius: 12, padding: '16px 18px', boxShadow: '0 2px 12px rgba(12,68,124,0.07)' },
-  chartsGrid:      { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 },
-  chartCard:       { background: '#fff', borderRadius: 12, padding: '16px 18px', boxShadow: '0 2px 12px rgba(12,68,124,0.07)' },
-  empty:           { fontSize: 12, color: '#B0BBCC', fontStyle: 'italic', padding: '12px 0' },
 }

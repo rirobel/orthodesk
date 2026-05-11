@@ -221,7 +221,7 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
 
   return (
     <div style={S.overlay} onClick={onClose}>
-      <div style={{ ...S.modalBox, maxWidth: 680 }} onClick={e => e.stopPropagation()}>
+      <div style={{ ...S.modalBox, maxWidth: isMobile ? '100%' : 680 }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div style={S.modalHead}>
@@ -429,6 +429,18 @@ export default function Bilans({ session }) {
   const [selectedId, setSelectedId] = useState(null)
   const [modal, setModal]         = useState(false)
   const [editBilan, setEditBilan] = useState(null)
+
+  function useIsMobile() {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
+    useEffect(() => {
+      const handler = async () => setIsMobile(window.innerWidth < 700)
+      window.addEventListener('resize', handler)
+      return () => window.removeEventListener('resize', handler)
+    }, [])
+    return isMobile
+  }
+
+  const isMobile = useIsMobile()
 
   const load = useCallback(async () => {
     setLoading(true)

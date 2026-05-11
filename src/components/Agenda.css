@@ -1,0 +1,615 @@
+.toolbar {
+  background: #fff;
+  border-bottom: 1px solid #DDE5EF;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.arr {
+  width: 30px;
+  height: 30px;
+  background: #F0F4F9;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todayBtn {
+  padding: 5px 12px;
+  background: none;
+  border: 1.5px solid #DDE5EF;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4A6080;
+  cursor: pointer;
+}
+
+.weekLbl {
+  font-family: 'Georgia, serif';
+  font-size: 17px;
+  color: #1A2744;
+  flex: 1;
+}
+
+.addBtn {
+  padding: 8px 16px;
+  background: #0C447C;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.weekHeader {
+  display: grid;
+  grid-template-columns: 52px repeat(6, 1fr);
+  border-bottom: 1px solid #DDE5EF;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.timeCorner {
+}
+
+.whCell {
+  padding: 8px 6px;
+  text-align: center;
+  border-left: 1px solid #DDE5EF;
+}
+
+.whDay {
+  font-size: 10px;
+  color: #8A9BB0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.whNum {
+  font-size: 19px;
+  font-weight: 600;
+  color: #4A6080;
+  font-family: 'Georgia, serif';
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.whToday {
+  background: #0C447C;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px auto 0;
+  font-size: 16px;
+}
+
+.whCnt {
+  font-size: 10px;
+  color: #C9A84C;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.gridWrap {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 52px repeat(6, 1fr);
+  background: #fff;
+}
+
+.timeCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.tSlot {
+  height: 56px;
+  display: flex;
+  align-items: flex-start;
+  padding: 3px 6px 0;
+  font-size: 10px;
+  color: #8A9BB0;
+  border-bottom: 1px solid #DDE5EF;
+  font-weight: 600;
+}
+
+.dayCol {
+  border-left: 1px solid #DDE5EF;
+  position: relative;
+}
+
+.dSlot {
+  height: 56px;
+  border-bottom: 1px solid #DDE5EF;
+  cursor: pointer;
+}
+
+.rdvCard {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  border-radius: 7px;
+  padding: 3px 7px;
+  cursor: pointer;
+  overflow: hidden;
+  border-left: 3px solid transparent;
+  z-index: 2;
+}
+
+.rcTime {
+  font-size: 9px;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.rcName {
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rcType {
+  font-size: 10px;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statsBar {
+  background: #fff;
+  border-top: 1px solid #DDE5EF;
+  padding: 8px 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.stat {
+  font-size: 12px;
+  color: #4A6080;
+  font-weight: 500;
+}
+
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 13px;
+  box-shadow: 0 8px 32px rgba(12,68,124,0.18);
+  width: 270px;
+  z-index: 50;
+  border: 1px solid #DDE5EF;
+  padding: 14px 16px;
+}
+
+.popupBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  color: #fff;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.popupName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A2744;
+  margin-bottom: 4px;
+}
+
+.popupMeta {
+  font-size: 12px;
+  color: #4A6080;
+  margin-bottom: 3px;
+}
+
+.popupActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.popupEdit {
+  flex: 1;
+  padding: 6px;
+  border-radius: 7px;
+  background: #F0F4F9;
+  color: #0C447C;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.popupDel {
+  flex: 1;
+  padding: 6px;
+  border-radius: 7px;
+  background: #FCEBEB;
+  color: #C0392B;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,30,60,0.45);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modalBox {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 8px 32px rgba(12,68,124,0.18);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modalHead {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid #DDE5EF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-family: 'Georgia, serif';
+  font-size: 19px;
+  color: #0C447C;
+}
+
+.closeBtn {
+  width: 28px;
+  height: 28px;
+  background: #F0F4F9;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #8A9BB0;
+}
+
+.modalBody {
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.modalFoot {
+  padding: 12px 22px 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  border-top: 1px solid #DDE5EF;
+}
+
+.fg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fl {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4A6080;
+}
+
+.fi {
+  padding: 8px 12px;
+  border: 1.5px solid #DDE5EF;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'DM Sans, sans-serif';
+  outline: none;
+  width: 100%;
+}
+
+.frow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.typeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.typeOpt {
+  padding: 8px 12px;
+  border: 1.5px solid #DDE5EF;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4A6080;
+}
+
+.typeOptSel {
+  border-color: #0C447C;
+  background: #EBF2F9;
+  color: #0C447C;
+}
+
+.dangerBtn {
+  padding: 8px 14px;
+  background: #FCEBEB;
+  color: #C0392B;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: auto;
+}
+
+.cancelBtn {
+  padding: 8px 14px;
+  background: #F0F4F9;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4A6080;
+  cursor: pointer;
+}
+
+.saveBtn {
+  padding: 8px 18px;
+  background: #0C447C;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .arr {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .todayBtn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .weekLbl {
+    font-size: 14px;
+  }
+
+  .addBtn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .weekHeader {
+    grid-template-columns: 40px repeat(6, 1fr);
+  }
+
+  .whCell {
+    padding: 6px 4px;
+  }
+
+  .whDay {
+    font-size: 9px;
+  }
+
+  .whNum {
+    font-size: 16px;
+  }
+
+  .whToday {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .whCnt {
+    font-size: 9px;
+  }
+
+  .grid {
+    grid-template-columns: 40px repeat(6, 1fr);
+  }
+
+  .tSlot {
+    height: 48px;
+    padding: 2px 4px 0;
+    font-size: 9px;
+  }
+
+  .dSlot {
+    height: 48px;
+  }
+
+  .rdvCard {
+    left: 2px;
+    right: 2px;
+    padding: 2px 5px;
+  }
+
+  .rcTime {
+    font-size: 8px;
+  }
+
+  .rcName {
+    font-size: 10px;
+  }
+
+  .rcType {
+    font-size: 9px;
+  }
+
+  .statsBar {
+    padding: 6px 12px;
+    gap: 12px;
+  }
+
+  .stat {
+    font-size: 11px;
+  }
+
+  .popup {
+    width: 240px;
+    padding: 12px 14px;
+  }
+
+  .popupBadge {
+    font-size: 9px;
+    padding: 1px 6px;
+  }
+
+  .popupName {
+    font-size: 14px;
+  }
+
+  .popupMeta {
+    font-size: 11px;
+  }
+
+  .popupActions {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .popupEdit, .popupDel {
+    padding: 5px;
+    font-size: 11px;
+  }
+
+  .overlay {
+    padding: 12px;
+  }
+
+  .modalBox {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+
+  .modalHead {
+    padding: 14px 16px 10px;
+  }
+
+  .modalTitle {
+    font-size: 16px;
+  }
+
+  .closeBtn {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .modalBody {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .modalFoot {
+    padding: 10px 16px 12px;
+    gap: 6px;
+  }
+
+  .fg {
+    gap: 3px;
+  }
+
+  .fl {
+    font-size: 10px;
+  }
+
+  .fi {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .frow {
+    gap: 10px;
+  }
+
+  .typeGrid {
+    gap: 6px;
+  }
+
+  .typeOpt {
+    padding: 6px 10px;
+    font-size: 11px;
+    gap: 6px;
+  }
+
+  .dangerBtn, .cancelBtn, .saveBtn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 32px repeat(3, 1fr);
+  }
+
+  .weekHeader {
+    grid-template-columns: 32px repeat(3, 1fr);
+  }
+
+  .popup {
+    width: 90vw;
+    max-width: 280px;
+  }
+}
