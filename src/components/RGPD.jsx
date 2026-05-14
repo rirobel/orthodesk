@@ -21,7 +21,7 @@ export function RGPDModal({ onClose }) {
 
           <Section icon="🔒" title="Qui sommes-nous ?">
             OrthoDesk est une application de gestion de cabinet orthophonique développée
-            par Rokia Bellali, orthophoniste (Maroc). L'application est accessible à l'adresse{' '}
+            par Awale Cure, orthophoniste (Maroc). L'application est accessible à l'adresse{' '}
             <a href="https://orthodesk.vercel.app" style={S.link} target="_blank" rel="noreferrer">
               orthodesk.vercel.app
             </a>.
@@ -106,7 +106,7 @@ export function RGPDModal({ onClose }) {
         {/* Footer */}
         <div style={S.footer}>
           <span style={{ fontSize: 11, color: '#8A9BB0' }}>
-            OrthoDesk · par Rokia Orthophonie · orthodesk.vercel.app
+            OrthoDesk · par Awale Cure · orthodesk.vercel.app
           </span>
           <button style={S.okBtn} onClick={onClose}>J'ai compris</button>
         </div>

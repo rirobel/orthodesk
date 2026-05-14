@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './supabase'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import Landing from './pages/Landing'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -27,6 +28,7 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/" element={session ? <Dashboard session={session} /> : <Landing />} />
       <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
       <Route path="/*" element={session ? <Dashboard session={session} /> : <Navigate to="/login" />} />
     </Routes>

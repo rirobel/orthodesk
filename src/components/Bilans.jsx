@@ -549,7 +549,7 @@ export default function Bilans({ session }) {
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(9)
     doc.setTextColor(...BLEU)
-    doc.text('Orthophoniste R. Bellali', PW - MR, y + 4, { align: 'right' })
+    doc.text('Awale Cure', PW - MR, y + 4, { align: 'right' })
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...GRIS)
     doc.text(orthoEmail, PW - MR, y + 8, { align: 'right' })

@@ -1,11 +1,27 @@
+/* ── Reset & base ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ── App shell ──────────────────────────────────────────────────── */
 .app {
-  height: 100vh;
+  width: 100%;           /* ← était manquant : cause du non plein-écran */
+  min-height: 100vh;     /* ← min-height au lieu de height pour le scroll */
   display: flex;
   flex-direction: column;
   background: #F0F4F9;
 }
 
+/* ── Nav ────────────────────────────────────────────────────────── */
 .nav {
+  width: 100%;           /* ← important */
   background: #0C447C;
   display: flex;
   align-items: center;
@@ -14,6 +30,7 @@
   height: 58px;
   flex-shrink: 0;
   position: relative;
+  z-index: 200;
 }
 
 .logo {
@@ -62,6 +79,12 @@
   font-family: 'DM Sans', sans-serif;
   transition: all 0.15s;
   white-space: nowrap;
+  text-decoration: none;
+}
+
+.navTab:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.1);
 }
 
 .navTabActive {
@@ -84,11 +107,7 @@
   font-size: 24px;
   cursor: pointer;
   padding: 8px;
-}
-
-.navTabs.mobileOpen,
-.navRight.mobileOpen {
-  display: none;
+  line-height: 1;
 }
 
 .userEmail {
@@ -105,15 +124,33 @@
   font-size: 12px;
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
+  text-decoration: none;
+  transition: background 0.15s;
 }
 
+.logoutBtn:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+/* ── Body (dashboard intérieur, PAS la landing) ─────────────────── */
 .body {
   flex: 1;
-  overflow: hidden;
+  overflow: hidden;      /* garde le comportement du dashboard */
   display: flex;
+  width: 100%;
 }
 
-/* Responsive styles for mobile */
+/* ── Landing body ───────────────────────────────────────────────── */
+.landing-body {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  /* PAS de overflow-y: auto ici pour laisser le scroll natif fonctionner */
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .nav {
     padding: 0 12px;
@@ -128,73 +165,70 @@
     display: block;
   }
 
+  /* Caché par défaut sur mobile */
   .navTabs {
     display: none;
   }
 
   .navRight {
     display: none;
-    gap: 8px;
   }
 
-  .navTabs.mobileOpen,
-  .navRight.mobileOpen {
+  /* Menu ouvert */
+  .navTabs.mobileOpen {
     display: flex;
     flex-direction: column;
     position: absolute;
     top: 50px;
     left: 0;
     right: 0;
+    width: 100%;
     background: #0C447C;
-    padding: 14px 16px 16px;
-    gap: 10px;
+    padding: 14px 16px;
+    gap: 6px;
     z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
   }
 
   .navRight.mobileOpen {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: absolute;
     top: auto;
-    position: relative;
-    background: transparent;
-    padding: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: #0A3660;
+    padding: 10px 16px 14px;
     gap: 8px;
-  }
-
-  .navTabs.mobileOpen {
-    border-bottom: 1px solid rgba(255,255,255,0.12);
-    margin-bottom: 12px;
+    z-index: 99;
+    /* Positionné juste sous les tabs — JS doit calculer ou utiliser un wrapper */
   }
 
   .navTab {
     padding: 8px 12px;
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .userEmail {
-    display: none; /* Hide email on small screens to save space */
+    display: none;
   }
 
   .logoutBtn {
-    padding: 4px 8px;
-    font-size: 11px;
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 
 @media (max-width: 480px) {
-  .navTabs {
-    gap: 1px;
-  }
-
   .navTab {
-    padding: 3px 6px;
-    font-size: 10px;
-  }
-
-  .navRight span {
-    font-size: 10px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   .logoutBtn {
-    padding: 3px 6px;
-    font-size: 10px;
+    padding: 5px 10px;
+    font-size: 11px;
   }
 }
