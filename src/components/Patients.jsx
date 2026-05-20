@@ -147,8 +147,13 @@ export default function Patients({ session }) {
   const listPanel = (
     <div style={{ ...S.listPanel, width: isMobile ? '100%' : 320 }}>
       <div style={S.listHeader}>
-        <input style={S.search} type="text" placeholder="Rechercher…"
-          value={search} onChange={e => setSearch(e.target.value)} />
+        <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:8 }}>
+          <input style={{ ...S.search, marginBottom:0 }} type="text" placeholder="Rechercher…"
+            value={search} onChange={e => setSearch(e.target.value)} />
+          {isMobile && (
+            <button style={{ ...S.addBtn, whiteSpace:'nowrap', flexShrink:0 }} onClick={openNew}>+ Nouveau</button>
+          )}
+        </div>
         <div style={S.filters}>
           {['tous','actif','bilan','pause','archive'].map(f => (
             <button key={f} style={{...S.filterBtn, ...(filter===f ? S.filterActive : {})}}
@@ -206,14 +211,7 @@ export default function Patients({ session }) {
         </div>
       )}
 
-      {/* Bouton nouveau patient (mobile) */}
-      {isMobile && (
-        <div style={{ padding: '10px 12px', borderTop: '1px solid #DDE5EF' }}>
-          <button style={{ ...S.addBtn, width: '100%', justifyContent: 'center' }} onClick={openNew}>
-            + Nouveau patient
-          </button>
-        </div>
-      )}
+
     </div>
   )
 
@@ -221,7 +219,10 @@ export default function Patients({ session }) {
   const detailPanel = (
     <div style={S.detail}>
       {isMobile && showDetail && (
-        <button style={S.backBtn} onClick={() => setShowDetail(false)}>← Retour</button>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14, gap:8 }}>
+          <button style={{ ...S.backBtn, marginBottom:0 }} onClick={() => setShowDetail(false)}>← Retour</button>
+          <button style={S.addBtn} onClick={openNew}>+ Nouveau patient</button>
+        </div>
       )}
       {!selected ? (
         <div style={S.emptyDetail}>
