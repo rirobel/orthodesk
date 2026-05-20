@@ -441,6 +441,7 @@ export default function Bilans({ session }) {
   const [selectedId, setSelectedId] = useState(null)
   const [modal, setModal]         = useState(false)
   const [editBilan, setEditBilan] = useState(null)
+  const [showDetail, setShowDetail] = useState(false)
 
   function useIsMobile() {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
@@ -799,11 +800,9 @@ export default function Bilans({ session }) {
   const selected = bilans.find(b => b.id === selectedId)
   const selTemplate = selected ? templates.find(t => t.id === selected.template_id) : null
 
-  return (
-    <div style={S.wrap}>
-
-      {/* ── LISTE GAUCHE ── */}
-      <div style={S.listPanel}>
+  // ─── Panneaux séparés pour navigation mobile ───────────────────────────────
+  const listPanel = (
+    <div style={{ ...S.listPanel, width: isMobile ? '100%' : 320 }}>
 
         {/* Stats mini */}
         <div style={S.statsBar}>
@@ -828,8 +827,16 @@ export default function Bilans({ session }) {
         </div>
 
         <div style={S.listHeader}>
-          <input style={S.search} type="text" placeholder="Rechercher patient, pathologie…"
-            value={search} onChange={e => setSearch(e.target.value)} />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 0 }}>
+            <input style={{ ...S.search, marginBottom: 0 }} type="text" placeholder="Rechercher patient, pathologie…"
+              value={search} onChange={e => setSearch(e.target.value)} />
+            {isMobile && (
+              <button style={{ ...S.addBtn, whiteSpace: 'nowrap', flexShrink: 0, fontSize: 12, padding: '8px 12px' }}
+                onClick={() => { setEditBilan(null); setModal(true) }}>
+                + Nouveau
+              </button>
+            )}
+          </div>
           <div style={S.filters}>
             {['tous', 'brouillon', 'finalisé'].map(f => (
               <button key={f} style={{ ...S.filterBtn, ...(filter === f ? S.filterActive : {}) }}
@@ -851,7 +858,7 @@ export default function Bilans({ session }) {
             return (
               <div key={b.id}
                 style={{ ...S.bilanCard, ...(selectedId === b.id ? S.bilanCardSel : {}) }}
-                onClick={() => setSelectedId(b.id)}>
+                onClick={() => { setSelectedId(b.id); if (isMobile) setShowDetail(true) }}>
                 <div style={{ ...S.patAv, background: col + '22', color: col }}>
                   {initials(nom)}
                 </div>
@@ -868,23 +875,35 @@ export default function Bilans({ session }) {
           })}
         </div>
 
-        <div style={S.addBtnWrap}>
-          <button style={S.addBtnFull} onClick={() => { setEditBilan(null); setModal(true) }}>
-            + Nouveau bilan
-          </button>
-        </div>
-      </div>
+        {!isMobile && (
+          <div style={S.addBtnWrap}>
+            <button style={S.addBtnFull} onClick={() => { setEditBilan(null); setModal(true) }}>
+              + Nouveau bilan
+            </button>
+          </div>
+        )}
+    </div>
+  )
 
-      {/* ── DETAIL DROIT ── */}
-      <div style={S.detail}>
+  const detailPanel = (
+    <div style={S.detail}>
+        {/* Bouton Retour + Nouveau côte à côte sur mobile */}
+        {isMobile && showDetail && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 8 }}>
+            <button style={S.backBtn} onClick={() => setShowDetail(false)}>← Retour</button>
+            <button style={S.addBtn} onClick={() => { setEditBilan(null); setModal(true) }}>+ Nouveau bilan</button>
+          </div>
+        )}
         {!selected ? (
           <div style={S.emptyDetail}>
             <div style={{ fontSize: 48, opacity: .25 }}>📋</div>
             <div style={{ fontSize: 15, fontWeight: 600, color: '#4A6080' }}>Sélectionnez un bilan</div>
             <div style={{ fontSize: 12, color: '#8A9BB0' }}>pour voir le contenu</div>
-            <button style={{ ...S.addBtn, marginTop: 16 }} onClick={() => { setEditBilan(null); setModal(true) }}>
-              + Nouveau bilan
-            </button>
+            {!isMobile && (
+              <button style={{ ...S.addBtn, marginTop: 16 }} onClick={() => { setEditBilan(null); setModal(true) }}>
+                + Nouveau bilan
+              </button>
+            )}
           </div>
         ) : (
           <div style={S.detailInner}>
@@ -1022,7 +1041,20 @@ export default function Bilans({ session }) {
 
           </div>
         )}
-      </div>
+    </div>
+  )
+
+  return (
+    <div style={S.wrap}>
+      {/* RESPONSIVE : mobile = une vue à la fois */}
+      {isMobile ? (
+        showDetail ? detailPanel : listPanel
+      ) : (
+        <>
+          {listPanel}
+          {detailPanel}
+        </>
+      )}
 
       {/* ── MODAL ── */}
       {modal && (
@@ -1098,4 +1130,5 @@ const S = {
   dangerBtn:    { padding: '8px 14px', background: '#FCEBEB', color: '#C0392B', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
   cancelBtn:    { padding: '8px 14px', background: '#F0F4F9', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#4A6080', cursor: 'pointer' },
   saveBtn:      { padding: '8px 18px', background: '#0C447C', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
+  backBtn:      { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: '#fff', border: '1.5px solid #DDE5EF', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#0C447C', cursor: 'pointer' },
 }
