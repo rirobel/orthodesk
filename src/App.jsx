@@ -4,6 +4,9 @@ import { supabase } from './supabase'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Landing from './pages/Landing'
+import AdminInvite from './pages/AdminInvite'
+
+const ADMIN_EMAIL = 'robel.maroc@gmail.com'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -21,15 +24,30 @@ export default function App() {
   }, [])
 
   if (loading) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',fontFamily:'sans-serif',color:'#0C447C'}}>
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', fontFamily:'sans-serif', color:'#0C447C' }}>
       Chargement...
     </div>
   )
+
+  const isAdmin = session?.user?.email === ADMIN_EMAIL
 
   return (
     <Routes>
       <Route path="/" element={session ? <Dashboard session={session} /> : <Landing />} />
       <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
+
+      {/* Page admin — accessible uniquement pour robel.maroc@gmail.com */}
+      <Route
+        path="/admin"
+        element={
+          !session
+            ? <Navigate to="/login" />
+            : isAdmin
+              ? <AdminInvite session={session} />
+              : <Navigate to="/" />
+        }
+      />
+
       <Route path="/*" element={session ? <Dashboard session={session} /> : <Navigate to="/login" />} />
     </Routes>
   )
