@@ -26,11 +26,7 @@ export default function Dashboard({ session }) {
       <nav className="nav">
         <div className="logo">
           <div className="logoMark">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <ellipse cx="10" cy="10" rx="7" ry="6" stroke="#0C447C" strokeWidth="1.5"/>
-              <path d="M10 4Q13 6 13 10Q13 14 10 16" stroke="#0C447C" strokeWidth="1.2" strokeLinecap="round"/>
-              <path d="M7 5Q5 8 6 11Q7 14 9 15" stroke="#0C447C" strokeWidth="1" strokeLinecap="round"/>
-            </svg>
+            <img src="/favicon.svg" alt="Logo OrthoDesk" width="20" height="20" />
           </div>
           <span className="logoText">Ortho<span style={{color:'#C9A84C'}}>Desk</span></span>
         </div>

@@ -60,9 +60,10 @@ export function RGPDModal({ onClose }) {
             </ul>
           </Section>
 
-          <Section icon="👤" title="Vos droits (RGPD)">
-            Conformément au Règlement Général sur la Protection des Données (UE 2016/679),
-            vous disposez des droits suivants :
+          <Section icon="👤" title="Vos droits">
+            Conformément au Règlement Général sur la Protection des Données (UE 2016/679)
+            et à la <b>loi marocaine 09-08</b> relative à la protection des données personnelles
+            (sous le contrôle de la <b>CNDP</b>), vous disposez des droits suivants :
             <ul style={S.ul}>
               <li><b>Droit d'accès :</b> obtenir une copie de vos données.</li>
               <li><b>Droit de rectification :</b> corriger des données inexactes.</li>
@@ -72,7 +73,7 @@ export function RGPDModal({ onClose }) {
                 lisible (CSV / JSON).</li>
             </ul>
             Pour exercer ces droits, contactez :{' '}
-            <a href="mailto:contact@orthodesk.app" style={S.link}>contact@orthodesk.app</a>
+            <a href="mailto:robel.maroc@gmail.com" style={S.link}>robel.maroc@gmail.com</a>
           </Section>
 
           <Section icon="🍪" title="Cookies">

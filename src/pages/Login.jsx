@@ -54,11 +54,7 @@ export default function Login() {
 
         <div className="logoRow">
           <div className="logoMark">
-            <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
-              <ellipse cx="10" cy="10" rx="7" ry="6" stroke="#0C447C" strokeWidth="1.5"/>
-              <path d="M10 4Q13 6 13 10Q13 14 10 16" stroke="#0C447C" strokeWidth="1.2" strokeLinecap="round"/>
-              <path d="M7 5Q5 8 6 11Q7 14 9 15" stroke="#0C447C" strokeWidth="1" strokeLinecap="round"/>
-            </svg>
+            <img src="/favicon.svg" alt="Logo OrthoDesk" width="22" height="22" />
           </div>
           <span className="logoText">
             <span style={{ color: '#0C447C' }}>Ortho</span>

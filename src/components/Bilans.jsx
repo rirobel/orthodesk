@@ -513,14 +513,31 @@ export default function Bilans({ session }) {
     const patNom     = patient ? `${patient.prenom} ${patient.nom}` : '—'
     const sections   = template?.sections || []
     const donnees    = bilan.donnees || {}
-    const orthoEmail = session?.user?.email || ''
+
+    const { data: profil } = await supabase
+      .from('profiles')
+      .select('prenom, nom, nom_cabinet, telephone, adresse, ville, code_postal, pays')
+      .eq('id', session.user.id)
+      .single()
+
+    const nomOrtho   = profil ? `${profil.prenom || ''} ${profil.nom || ''}`.trim() : ''
+    const nomCabinet = profil?.nom_cabinet || ''
+    const telephone  = profil?.telephone || ''
+    const ligneAdresse = [
+      profil?.adresse,
+      [profil?.code_postal, profil?.ville].filter(Boolean).join(' '),
+      profil?.pays && profil.pays !== 'Maroc' ? profil.pays : '',
+    ].filter(Boolean).join(' — ')
+    const infosContact = [ligneAdresse, telephone ? `Tél : ${telephone}` : '']
+      .filter(Boolean).join('   |   ')
+    const piedTexte = [nomOrtho, telephone, ligneAdresse].filter(Boolean).join('   ·   ')
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
     const PW = 210  // largeur page A4
     const ML = 14   // marge gauche
     const MR = 14   // marge droite
     const CW = PW - ML - MR  // largeur contenu
-    let y = 14
+    let y = 36
 
     // Couleurs
     const BLEU    = [12, 68, 124]
@@ -531,37 +548,33 @@ export default function Bilans({ session }) {
     const BGGRIS  = [240, 244, 249]
 
     // ── En-tête ──────────────────────────────────────────────
-    // Barre bleue top
     doc.setFillColor(...BLEU)
-    doc.rect(0, 0, PW, 1.5, 'F')
+    doc.rect(0, 0, PW, 32, 'F')
 
-    // Titre gauche
+    doc.setTextColor(255, 255, 255)
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(16)
-    doc.setTextColor(...BLEU)
-    doc.text('Bilan Orthophonique', ML, y + 6)
+    doc.setFontSize(18)
+    doc.text('Bilan Orthophonique', ML, 13)
 
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(9)
-    doc.setTextColor(...GRIS)
-    doc.text(template?.nom || '', ML, y + 11)
+    if (nomCabinet) {
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.text(nomCabinet, ML, 27)
+    } else if (nomOrtho) {
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.text(nomOrtho, ML, 27)
+    }
 
-    // Infos ortho à droite
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
-    doc.setTextColor(...BLEU)
-    doc.text('Awale Cure', PW - MR, y + 4, { align: 'right' })
-    doc.setFont('helvetica', 'normal')
-    doc.setTextColor(...GRIS)
-    doc.text(orthoEmail, PW - MR, y + 8, { align: 'right' })
-    doc.text('orthodesk.vercel.app', PW - MR, y + 12, { align: 'right' })
+    doc.setFontSize(10)
+    doc.text('Date : ' + new Date().toLocaleDateString('fr-FR'), PW - MR, 13, { align: 'right' })
 
-    y += 16
     // Ligne séparatrice
     doc.setDrawColor(...BLEU)
     doc.setLineWidth(0.4)
-    doc.line(ML, y, PW - MR, y)
-    y += 5
+    doc.line(ML, 38, PW - MR, 38)
+    y = 44
 
     // ── Bloc patient ──────────────────────────────────────────
     doc.setFillColor(...BGGRIS)
@@ -779,8 +792,10 @@ export default function Bilans({ session }) {
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(7)
       doc.setTextColor(255, 255, 255)
-      doc.text(`OrthoDesk · Généré le ${new Date().toLocaleDateString('fr-FR')}`, ML, 294.5)
-      doc.text(`${patNom} · ${template?.pathologie || ''} · Page ${i}/${nbPages}`, PW - MR, 294.5, { align: 'right' })
+      if (piedTexte) {
+        doc.text(piedTexte, PW / 2, 294.5, { align: 'center', maxWidth: PW - 20 })
+      }
+      doc.text(`Page ${i}/${nbPages}`, PW - MR, 294.5, { align: 'right' })
     }
 
     // ── Téléchargement ────────────────────────────────────────
