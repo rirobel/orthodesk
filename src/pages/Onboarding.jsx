@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../supabase'
 
-const ORANGE = '#E89020'
+const ORANGE = '#C9A84C'
 const BLEU   = '#0C447C'
 
 const MODULES = [
