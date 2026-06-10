@@ -5,8 +5,26 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Landing from './pages/Landing'
 import AdminInvite from './pages/AdminInvite'
+import Onboarding from './pages/Onboarding'
 
 const ADMIN_EMAIL = 'robel.maroc@gmail.com'
+
+function AppWithOnboarding({ session }) {
+  // Vérifie si cet utilisateur a déjà vu l'onboarding
+  const key = `ortho_onboarded_${session.user.id}`
+  const [onboarded, setOnboarded] = useState(() => !!localStorage.getItem(key))
+
+  if (!onboarded) {
+    return (
+      <Onboarding
+        session={session}
+        onDone={() => setOnboarded(true)}
+      />
+    )
+  }
+
+  return <Dashboard session={session} />
+}
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -33,10 +51,13 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={session ? <Dashboard session={session} /> : <Landing />} />
+      <Route
+        path="/"
+        element={session ? <AppWithOnboarding session={session} /> : <Landing />}
+      />
       <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
 
-      {/* Page admin — accessible uniquement pour robel.maroc@gmail.com */}
+      {/* Page admin */}
       <Route
         path="/admin"
         element={
@@ -48,7 +69,10 @@ export default function App() {
         }
       />
 
-      <Route path="/*" element={session ? <Dashboard session={session} /> : <Navigate to="/login" />} />
+      <Route
+        path="/*"
+        element={session ? <AppWithOnboarding session={session} /> : <Navigate to="/login" />}
+      />
     </Routes>
   )
 }
