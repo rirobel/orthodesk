@@ -194,16 +194,12 @@ html, body {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    position: absolute;
-    top: auto;
-    left: 0;
-    right: 0;
+    position: static;
     width: 100%;
     background: #0A3660;
     padding: 10px 16px 14px;
     gap: 8px;
     z-index: 99;
-    /* Positionné juste sous les tabs — JS doit calculer ou utiliser un wrapper */
   }
 
   .navTab {

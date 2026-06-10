@@ -110,7 +110,7 @@ const GLOBAL_CSS = `
 
   .landing-body {
     flex: 1;
-    overflow-y: auto;
+    overflow-x: hidden;
     background: #F0F4F9;
     width: 100%;
     display: flex;
@@ -174,22 +174,14 @@ const GLOBAL_CSS = `
     .steps-grid { 
       grid-template-columns: 1fr !important; 
     }
-    .cta-btns   { 
-      flex-direction: column !important; 
-      align-items: stretch !important; 
+    .bilans-grid {
+      grid-template-columns: 1fr !important;
+      gap: 24px !important;
     }
-    .card-feature {
-      padding: 20px 16px !important;
+    .testimonials-grid {
+      grid-template-columns: 1fr !important;
+      gap: 20px !important;
     }
-    .hero-section {
-      padding: 40px 4% !important;
-    }
-    .features-section {
-      padding: 40px 4% !important;
-    }
-  }
-
-  @media (max-width: 480px) {
     .hero-section {
       padding: 24px 3% !important;
     }
@@ -557,8 +549,7 @@ export default function Landing() {
 
       {/* CONTENU */}
       <div className="landing-body">
-      <section style={{
-        padding: "120px 5% 80px",
+      <section className="hero-section" style={{
         background: `linear-gradient(160deg, #F0F4F9 0%, #FAFBFC 55%, #F5F7FA 100%)`,
         position: "relative",
         overflow: "hidden",
@@ -681,7 +672,7 @@ export default function Landing() {
       </section>
 
       {/* ── Fonctionnalités ── */}
-      <section id="fonctionnalites" style={{ padding: "90px 5%", background: C.sand }}>
+      <section id="fonctionnalites" className="features-section" style={{ background: C.sand }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <h2 className="anim-fade-up" style={{
@@ -735,7 +726,7 @@ export default function Landing() {
 
       {/* ── Bilans section ── */}
       <section id="bilans" style={{ padding: "90px 5%", background: C.white }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+        <div className="bilans-grid" style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
           <div>
             <div style={{
               display: "inline-block",
@@ -859,7 +850,7 @@ export default function Landing() {
           }}>
             Ce qu'en disent les beta-testeuses
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+          <div className="testimonials-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
             <TestiCard
               delay={0}
               quote="Enfin un logiciel pensé pour les orthos au Maroc. Les templates de bilans m'ont fait gagner des heures chaque semaine."
