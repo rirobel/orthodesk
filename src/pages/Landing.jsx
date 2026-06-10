@@ -517,13 +517,13 @@ export default function Landing() {
   }, []);
 
   const templates = [
-    { label: "Trisomie 21",         color: "#9B59B6" },
-    { label: "TSA verbal",          color: "#2BBFAA" },
-    { label: "Bégaiement",          color: "#E67E22" },
-    { label: "Retard de langage",   color: "#3498DB" },
-    { label: "Dyslexie",            color: "#E74C3C" },
-    { label: "Aphasie post-AVC",    color: "#1A9688" },
-    { label: "Dysphagie",           color: "#27AE60" },
+    { label: "Trisomie 21",         color: C.navy },
+    { label: "TSA verbal",          color: C.accent },
+    { label: "Bégaiement",          color: C.navy },
+    { label: "Retard de langage",   color: C.accent },
+    { label: "Dyslexie",            color: C.navy },
+    { label: "Aphasie post-AVC",    color: C.accent },
+    { label: "Dysphagie",           color: C.navy },
   ];
 
   return (
