@@ -6,23 +6,17 @@ import Dashboard from './pages/Dashboard'
 import Landing from './pages/Landing'
 import AdminInvite from './pages/AdminInvite'
 import Onboarding from './pages/Onboarding'
+import ResetPassword from './pages/ResetPassword'
 
 const ADMIN_EMAIL = 'robel.maroc@gmail.com'
 
 function AppWithOnboarding({ session }) {
-  // Vérifie si cet utilisateur a déjà vu l'onboarding
   const key = `ortho_onboarded_${session.user.id}`
   const [onboarded, setOnboarded] = useState(() => !!localStorage.getItem(key))
 
   if (!onboarded) {
-    return (
-      <Onboarding
-        session={session}
-        onDone={() => setOnboarded(true)}
-      />
-    )
+    return <Onboarding session={session} onDone={() => setOnboarded(true)} />
   }
-
   return <Dashboard session={session} />
 }
 
@@ -51,11 +45,11 @@ export default function App() {
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={session ? <AppWithOnboarding session={session} /> : <Landing />}
-      />
+      <Route path="/" element={session ? <AppWithOnboarding session={session} /> : <Landing />} />
       <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
+
+      {/* Page reset mot de passe — accessible sans session (lien email) */}
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Page admin */}
       <Route
