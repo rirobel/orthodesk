@@ -713,12 +713,12 @@ export default function Landing() {
             <FeatureCard
               icon="fileText" title="Comptes Rendus" delay={0.4}
               desc="Rédigez et archivez vos comptes rendus de séance directement dans l'app."
-              items={["Lié à chaque séance de l'agenda", "Historique complet par patient", "Accessible depuis la fiche patient", "Sauvegarde temps réel Supabase"]}
+              items={["Lié à chaque séance de l'agenda", "Historique complet par patient", "Accessible depuis la fiche patient", "Sauvegarde des données en temps réel"]}
             />
             <FeatureCard
               icon="shield" title="Sécurité & Confidentialité" delay={0.5}
               desc="Chaque orthophoniste voit uniquement ses propres données. Jamais celles des autres."
-              items={["Row Level Security Supabase", "Chiffrement des données", "Connexion email sécurisée", "Données isolées par cabinet"]}
+              items={["Row Level Security", "Chiffrement des données", "Connexion email sécurisée", "Données isolées par cabinet"]}
             />
           </div>
         </div>
