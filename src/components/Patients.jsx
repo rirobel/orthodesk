@@ -200,34 +200,72 @@ export default function Patients({ session }) {
     return window.jspdf.jsPDF
   }
 
+  function hexToRgb(hex, fallback) {
+    if (!hex || typeof hex !== 'string') return fallback
+    const cleaned = hex.replace('#', '')
+    if (![3, 6].includes(cleaned.length)) return fallback
+    const normalized = cleaned.length === 3
+      ? cleaned.split('').map(c => c + c).join('')
+      : cleaned
+    const int = parseInt(normalized, 16)
+    if (Number.isNaN(int)) return fallback
+    return [(int >> 16) & 255, (int >> 8) & 255, int & 255]
+  }
+
+  async function loadImageDataUrl(url) {
+    if (!url) return null
+    return new Promise(resolve => {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.naturalWidth || 100
+        canvas.height = img.naturalHeight || 100
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return resolve(null)
+        ctx.drawImage(img, 0, 0)
+        resolve(canvas.toDataURL('image/png'))
+      }
+      img.onerror = () => resolve(null)
+      img.src = url
+    })
+  }
+
   async function exportPatientsPDF() {
     const jsPDF=await loadJsPDF()
-    const {data:profil}=await supabase.from('profiles').select('prenom,nom,nom_cabinet,telephone,adresse,ville,code_postal,pays').eq('id',session.user.id).single()
+    const {data:profil}=await supabase.from('profiles').select('prenom,nom,nom_cabinet,telephone,adresse,ville,code_postal,pays,couleur_principale,couleur_texte,logo_url').eq('id',session.user.id).single()
     const nomOrtho=profil?`${profil.prenom||''} ${profil.nom||''}`.trim():''
     const nomCabinet=profil?.nom_cabinet||''
     const telephone=profil?.telephone||''
     const ligneAdresse=[profil?.adresse,[profil?.code_postal,profil?.ville].filter(Boolean).join(' '),profil?.pays&&profil.pays!=='Maroc'?profil.pays:''].filter(Boolean).join(' — ')
     const doc=new jsPDF({unit:'mm',format:'a4'})
     const W=210,ML=14,MR=14,BLEU=[12,68,124],GRIS=[138,155,176],NOIR=[26,39,68]
-    doc.setFillColor(...BLEU); doc.rect(0,0,W,30,'F')
-    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(18)
-    doc.text('Liste des patients',ML,12)
-    if(nomCabinet||nomOrtho){doc.setFontSize(10);doc.text(nomCabinet||nomOrtho,ML,21)}
+    const headerFill=hexToRgb(profil?.couleur_principale||'#0C447C',BLEU)
+    const headerText=hexToRgb(profil?.couleur_texte||'#FFFFFF',[255,255,255])
+    const logoData=profil?.logo_url?await loadImageDataUrl(profil.logo_url):null
+    const logoSize=24
+    const titleX=logoData?ML+logoSize+6:ML
+
+    doc.setFillColor(...headerFill); doc.rect(0,0,W,30,'F')
+    if(logoData){try{doc.addImage(logoData,'PNG',ML,4,logoSize,logoSize)}catch(e){}}
+    doc.setTextColor(...headerText); doc.setFont('helvetica','bold'); doc.setFontSize(18)
+    doc.text('Liste des patients',titleX,12,{maxWidth:W-MR-titleX})
+    if(nomCabinet||nomOrtho){doc.setFontSize(10);doc.text(nomCabinet||nomOrtho,titleX,21,{maxWidth:W-MR-titleX})}
     doc.setFont('helvetica','normal');doc.setFontSize(9)
     doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`,W-MR,12,{align:'right'})
-    doc.setTextColor(...GRIS);doc.text('Export patients',W-MR,19,{align:'right'})
+    doc.setTextColor(...headerText);doc.text('Export patients',W-MR,19,{align:'right'})
     const rows=filtered.map(p=>{
       const rdvCount=rdvs.filter(r=>r.patient_nom===p.prenom+' '+p.nom).length
       const bilanCount=bilans.filter(b=>b.patient_id===p.id).length
       return[p.prenom,p.nom,p.motif||'',STATUTS[p.statut]||'',rdvCount,bilanCount]
     })
-    doc.autoTable({startY:34,margin:{left:ML,right:MR},head:[['Prénom','Nom','Motif','Statut','Séances','Bilans']],body:rows,theme:'striped',headStyles:{fillColor:BLEU,textColor:255,fontStyle:'bold',halign:'center'},styles:{fontSize:9,cellPadding:3,textColor:NOIR},columnStyles:{0:{cellWidth:28},1:{cellWidth:28},2:{cellWidth:52},3:{cellWidth:26,halign:'center'},4:{cellWidth:18,halign:'center'},5:{cellWidth:18,halign:'center'}}})
+    doc.autoTable({startY:34,margin:{left:ML,right:MR},head:[['Prénom','Nom','Motif','Statut','Séances','Bilans']],body:rows,theme:'striped',headStyles:{fillColor:headerFill,textColor:headerText,fontStyle:'bold',halign:'center'},styles:{fontSize:9,cellPadding:3,textColor:NOIR},columnStyles:{0:{cellWidth:28},1:{cellWidth:28},2:{cellWidth:52},3:{cellWidth:26,halign:'center'},4:{cellWidth:18,halign:'center'},5:{cellWidth:18,halign:'center'}}})
     const totalPages=doc.getNumberOfPages()
+    const footerText=[nomCabinet||nomOrtho,ligneAdresse,telephone].filter(Boolean).join(' · ')
     for(let i=1;i<=totalPages;i++){
-      doc.setPage(i);doc.setFillColor(...BLEU);doc.rect(0,290,W,7,'F')
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(255,255,255)
-      const fl=[nomCabinet||nomOrtho,ligneAdresse,telephone].filter(Boolean).join(' · ')
-      if(fl)doc.text(fl,ML,294.5)
+      doc.setPage(i);doc.setFillColor(...headerFill);doc.rect(0,290,W,7,'F')
+      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...headerText)
+      if(footerText)doc.text(footerText,ML,294.5)
       doc.text(`Page ${i}/${totalPages}`,W-MR,294.5,{align:'right'})
     }
     doc.save(`Patients_${new Date().toISOString().slice(0,10)}.pdf`)

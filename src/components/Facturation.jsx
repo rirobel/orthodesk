@@ -1,12 +1,43 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 
+function hexToRgb(hex, fallback) {
+  if (!hex || typeof hex !== 'string') return fallback
+  const cleaned = hex.replace('#', '')
+  if (![3, 6].includes(cleaned.length)) return fallback
+  const normalized = cleaned.length === 3
+    ? cleaned.split('').map(c => c + c).join('')
+    : cleaned
+  const int = parseInt(normalized, 16)
+  if (Number.isNaN(int)) return fallback
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255]
+}
+
+async function loadImageDataUrl(url) {
+  if (!url) return null
+  return new Promise(resolve => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth || 100
+      canvas.height = img.naturalHeight || 100
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return resolve(null)
+      ctx.drawImage(img, 0, 0)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    img.onerror = () => resolve(null)
+    img.src = url
+  })
+}
+
 // ── Export PDF via jsPDF (chargé dynamiquement, pas besoin d'installer) ──────
 async function exportFacturePDF(fac, userId) {
   // 1. Récupérer le profil de l'ortho depuis Supabase
   const { data: profil } = await supabase
     .from('profiles')
-    .select('prenom, nom, nom_cabinet, telephone, adresse, ville, code_postal, pays')
+    .select('prenom, nom, nom_cabinet, telephone, adresse, ville, code_postal, pays, couleur_principale, couleur_texte, logo_url')
     .eq('id', userId)
     .single()
 
@@ -50,35 +81,30 @@ async function exportFacturePDF(fac, userId) {
   }
 
   const W = 210
+  const headerFill = hexToRgb(profil?.couleur_principale || '#0C447C', BLEU)
+  const headerText = hexToRgb(profil?.couleur_texte || '#FFFFFF', BLANC)
+  const logoData   = profil?.logo_url ? await loadImageDataUrl(profil.logo_url) : null
+  const logoSize   = 24
+  const logoMargin = 15
+  const titleX     = logoData ? logoMargin + logoSize + 6 : logoMargin
 
-  // ── Bande en-tête bleue ────────────────────────────────────────────────────
-  doc.setFillColor(...BLEU)
+  // ── Bande en-tête personnalisée ───────────────────────────────────────────
+  doc.setFillColor(...headerFill)
   doc.rect(0, 0, W, 42, 'F')
 
-  doc.setTextColor(...BLANC)
+  if (logoData) {
+    try { doc.addImage(logoData, 'PNG', logoMargin, 8, logoSize, logoSize) } catch (e) { }
+  }
 
-  // Nom du cabinet (grand) ou nom de l'ortho si pas de cabinet
-  const titreHaut = nomCabinet || nomOrtho || 'Cabinet d\'orthophonie'
+  doc.setTextColor(...headerText)
+
+  // Nom du cabinet (grand) ou texte générique si pas de cabinet
+  const titreHaut = nomCabinet || 'Cabinet d\'orthophonie'
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(18)
-  doc.text(titreHaut, 15, 16)
-
-  // Si cabinet + nom ortho : nom de l'ortho en dessous
-  let ligne2Y = 24
-  if (nomCabinet && nomOrtho) {
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(9)
-    doc.text(nomOrtho, 15, 24)
-    ligne2Y = 31
-  }
-
-  // Adresse et téléphone
-  const infosContact = [ligneAdresse, telephone ? `Tél : ${telephone}` : ''].filter(Boolean).join('   |   ')
-  if (infosContact) {
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8.5)
-    doc.text(infosContact, 15, ligne2Y + (nomCabinet && nomOrtho ? 0 : -2))
-  }
+  const titleMaxWidth = Math.max(72, 105 - (titleX - logoMargin))
+  const titleLines = doc.splitTextToSize(titreHaut, titleMaxWidth)
+  doc.text(titleLines, titleX, 16)
 
   // Référence + date à droite
   const ref = 'REF-' + (fac.id || '').toString().slice(0, 8).toUpperCase()
@@ -171,14 +197,14 @@ async function exportFacturePDF(fac, userId) {
     doc.text(lines, 22, 213)
   }
 
-  // ── Pied de page bleu ─────────────────────────────────────────────────────
-  doc.setFillColor(...BLEU)
+  // ── Pied de page personnalisé ────────────────────────────────────────────
+  doc.setFillColor(...headerFill)
   doc.rect(0, 282, W, 15, 'F')
 
   // Coordonnées de l'ortho en pied de page
   const piedTexte = [nomOrtho, telephone, ligneAdresse].filter(Boolean).join('   ·   ')
   if (piedTexte) {
-    doc.setTextColor(...BLANC)
+    doc.setTextColor(...headerText)
     doc.setFontSize(7.5)
     doc.setFont('helvetica', 'normal')
     doc.text(piedTexte, W / 2, 291, { align: 'center', maxWidth: W - 20 })

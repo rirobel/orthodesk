@@ -175,10 +175,10 @@ export default function Profil({ session }) {
             <img src={logoPreview} alt="Logo"
               style={{ width:58, height:58, borderRadius:10, objectFit:'contain', border:'1.5px solid #DDE5EF', background:'#F8FAFD', flexShrink:0 }}/>
           ) : (
-            <div style={{ ...S.avatar, background:couleurBg, color:couleurTxt }}>{initiales}</div>
+            <div style={{ ...S.avatar, background:'#0C447C', color:'#FFFFFF' }}>{initiales}</div>
           )}
           <div>
-            <div style={{ ...S.headerName, color:couleurBg }}>
+            <div style={{ ...S.headerName, color:'#0C447C' }}>
               {profil.prenom||profil.nom ? `${profil.prenom} ${profil.nom}`.trim() : 'Mon profil'}
             </div>
             <div style={S.headerEmail}>{session.user.email}</div>
@@ -381,7 +381,7 @@ export default function Profil({ session }) {
 
         {/* ── Bouton sauvegarder ───────────────────────────────────────── */}
         <div style={S.footer}>
-          <button style={{...S.saveBtn, background:couleurBg, opacity:saving?0.7:1}}
+          <button style={{...S.saveBtn, background:'#0C447C', opacity:saving?0.7:1}}
             onClick={saveProfil} disabled={saving}>
             {saving ? 'Enregistrement…' : '💾 Enregistrer le profil'}
           </button>
@@ -441,7 +441,7 @@ export default function Profil({ session }) {
             {!pwDone && (
               <div style={{padding:'12px 22px 16px',display:'flex',gap:8,justifyContent:'flex-end',borderTop:'1px solid #DDE5EF'}}>
                 <button style={{padding:'8px 14px',background:'#F0F4F9',border:'none',borderRadius:8,fontSize:13,color:'#4A6080',cursor:'pointer',fontFamily:'DM Sans, sans-serif'}} onClick={()=>setPwModal(false)}>Annuler</button>
-                <button style={{padding:'8px 18px',background:couleurBg,color:couleurTxt,border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'DM Sans, sans-serif'}} onClick={changePassword} disabled={pwSaving}>{pwSaving?'Mise à jour…':'Enregistrer'}</button>
+                <button style={{padding:'8px 18px',background:'#0C447C',color:'#FFFFFF',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'DM Sans, sans-serif'}} onClick={changePassword} disabled={pwSaving}>{pwSaving?'Mise à jour…':'Enregistrer'}</button>
               </div>
             )}
           </div>

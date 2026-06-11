@@ -1,6 +1,37 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabase'
 
+function hexToRgb(hex, fallback) {
+  if (!hex || typeof hex !== 'string') return fallback
+  const cleaned = hex.replace('#', '')
+  if (![3, 6].includes(cleaned.length)) return fallback
+  const normalized = cleaned.length === 3
+    ? cleaned.split('').map(c => c + c).join('')
+    : cleaned
+  const int = parseInt(normalized, 16)
+  if (Number.isNaN(int)) return fallback
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255]
+}
+
+async function loadImageDataUrl(url) {
+  if (!url) return null
+  return new Promise(resolve => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth || 100
+      canvas.height = img.naturalHeight || 100
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return resolve(null)
+      ctx.drawImage(img, 0, 0)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    img.onerror = () => resolve(null)
+    img.src = url
+  })
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmtDate(d) {
   if (!d) return ''
@@ -516,7 +547,7 @@ export default function Bilans({ session }) {
 
     const { data: profil } = await supabase
       .from('profiles')
-      .select('prenom, nom, nom_cabinet, telephone, adresse, ville, code_postal, pays')
+      .select('prenom, nom, nom_cabinet, telephone, adresse, ville, code_postal, pays, couleur_principale, couleur_texte, logo_url')
       .eq('id', session.user.id)
       .single()
 
@@ -547,23 +578,34 @@ export default function Bilans({ session }) {
     const ROUGE   = [192, 57, 43]
     const BGGRIS  = [240, 244, 249]
 
+    const headerFill = hexToRgb(profil?.couleur_principale || '#0C447C', BLEU)
+    const headerText = hexToRgb(profil?.couleur_texte || '#FFFFFF', [255, 255, 255])
+    const logoData   = profil?.logo_url ? await loadImageDataUrl(profil.logo_url) : null
+    const logoSize   = 24
+    const logoMargin = ML
+    const titleX     = logoData ? logoMargin + logoSize + 6 : logoMargin
+
     // ── En-tête ──────────────────────────────────────────────
-    doc.setFillColor(...BLEU)
+    doc.setFillColor(...headerFill)
     doc.rect(0, 0, PW, 32, 'F')
 
-    doc.setTextColor(255, 255, 255)
+    if (logoData) {
+      try { doc.addImage(logoData, 'PNG', logoMargin, 4, logoSize, logoSize) } catch (e) { }
+    }
+
+    doc.setTextColor(...headerText)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(18)
-    doc.text('Bilan Orthophonique', ML, 13)
+    doc.text('Bilan Orthophonique', titleX, 13, { maxWidth: PW - MR - titleX })
 
     if (nomCabinet) {
       doc.setFontSize(10)
       doc.setFont('helvetica', 'bold')
-      doc.text(nomCabinet, ML, 27)
+      doc.text(nomCabinet, titleX, 27, { maxWidth: PW - MR - titleX })
     } else if (nomOrtho) {
       doc.setFontSize(10)
       doc.setFont('helvetica', 'bold')
-      doc.text(nomOrtho, ML, 27)
+      doc.text(nomOrtho, titleX, 27, { maxWidth: PW - MR - titleX })
     }
 
     doc.setFont('helvetica', 'bold')
@@ -571,7 +613,7 @@ export default function Bilans({ session }) {
     doc.text('Date : ' + new Date().toLocaleDateString('fr-FR'), PW - MR, 13, { align: 'right' })
 
     // Ligne séparatrice
-    doc.setDrawColor(...BLEU)
+    doc.setDrawColor(...headerFill)
     doc.setLineWidth(0.4)
     doc.line(ML, 38, PW - MR, 38)
     y = 44
@@ -787,11 +829,11 @@ export default function Bilans({ session }) {
     const nbPages = doc.getNumberOfPages()
     for (let i = 1; i <= nbPages; i++) {
       doc.setPage(i)
-      doc.setFillColor(...BLEU)
+      doc.setFillColor(...headerFill)
       doc.rect(0, 290, PW, 7, 'F')
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(7)
-      doc.setTextColor(255, 255, 255)
+      doc.setTextColor(...headerText)
       if (piedTexte) {
         doc.text(piedTexte, PW / 2, 294.5, { align: 'center', maxWidth: PW - 20 })
       }
