@@ -231,7 +231,7 @@ export default function Onboarding({ session, onDone }) {
 const S = {
   wrap: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #EBF2F9 0%, #F0F4F9 60%, #FEF3E2 100%)',
+    background: 'radial-gradient(ellipse at 12% 14%, rgba(201, 168, 76, 0.14), transparent 35%), linear-gradient(135deg, #F5F8FC 0%, #EEF4FA 100%)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -240,8 +240,9 @@ const S = {
   },
   card: {
     background: '#fff',
-    borderRadius: 20,
-    boxShadow: '0 8px 40px rgba(12,68,124,0.13)',
+    border: '1px solid #E5ECF3',
+    borderRadius: 22,
+    boxShadow: '0 22px 58px rgba(26,39,68,0.11)',
     width: '100%',
     maxWidth: 560,
     overflow: 'hidden',
@@ -271,11 +272,12 @@ const S = {
     fontSize: 40, margin: '0 auto',
   },
   h1: {
-    fontFamily: 'Georgia, serif',
+    fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
     fontSize: 26,
     color: BLEU,
     margin: 0,
     lineHeight: 1.25,
+    letterSpacing: '-0.4px',
   },
   sub: {
     fontSize: 14,
@@ -338,14 +340,15 @@ const S = {
   btnPrimary: {
     flex: 1,
     padding: '12px 20px',
-    background: ORANGE,
+    background: BLEU,
     color: '#fff',
     border: 'none',
-    borderRadius: 10,
+    borderRadius: 11,
     fontSize: 13,
     fontWeight: 700,
     cursor: 'pointer',
     fontFamily: 'DM Sans, sans-serif',
+    boxShadow: '0 4px 12px rgba(12,68,124,0.18)',
   },
   btnSecondary: {
     padding: '12px 16px',

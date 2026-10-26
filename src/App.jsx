@@ -50,6 +50,7 @@ export default function App() {
 
       {/* Page reset mot de passe — accessible sans session (lien email) */}
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/set-password" element={<ResetPassword />} />
 
       {/* Page admin */}
       <Route

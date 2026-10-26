@@ -23,6 +23,7 @@ function EyeIcon({ show, size = 20 }) {
 
 export default function ResetPassword() {
   const navigate = useNavigate()
+  const isInvite = window.location.pathname === '/set-password'
   const [password, setPassword]         = useState('')
   const [confirm, setConfirm]           = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -31,15 +32,30 @@ export default function ResetPassword() {
   const [error, setError]               = useState('')
   const [done, setDone]                 = useState(false)
   const [validSession, setValidSession] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
 
   useEffect(() => {
-    // Supabase injecte la session automatiquement depuis le lien email
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' && session) {
+    let active = true
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (active && session) {
         setValidSession(true)
       }
+      if (active) setCheckingSession(false)
     })
-  }, [])
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === 'PASSWORD_RECOVERY' || (isInvite && event === 'SIGNED_IN'))) {
+        setValidSession(true)
+      }
+      setCheckingSession(false)
+    })
+
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
+  }, [isInvite])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -77,7 +93,9 @@ export default function ResetPassword() {
           </span>
         </div>
 
-        {done ? (
+        {checkingSession ? (
+          <p className="subtitle" style={{ textAlign:'center' }}>Vérification du lien…</p>
+        ) : done ? (
           <div style={{ textAlign:'center', padding:'24px 0', display:'flex', flexDirection:'column', alignItems:'center', gap:14 }}>
             <div style={{ width:60, height:60, borderRadius:'50%', background:'#E8F5EE', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>
               ✅
@@ -89,9 +107,19 @@ export default function ResetPassword() {
               Vous allez être redirigée vers votre cabinet dans quelques secondes…
             </div>
           </div>
+        ) : !validSession ? (
+          <div style={{ textAlign:'center', padding:'16px 0' }}>
+            <h2 className="title">Lien invalide ou expiré</h2>
+            <p className="subtitle">
+              Demandez une nouvelle invitation ou un nouvel email de récupération.
+            </p>
+            <button className="btn" type="button" onClick={() => navigate('/login')}>
+              Retour à la connexion
+            </button>
+          </div>
         ) : (
           <>
-            <h2 className="title">Nouveau mot de passe</h2>
+            <h2 className="title">{isInvite ? 'Définir votre mot de passe' : 'Nouveau mot de passe'}</h2>
             <p className="subtitle">Choisissez un mot de passe sécurisé (8 caractères minimum).</p>
 
             <form onSubmit={handleSubmit} className="form">

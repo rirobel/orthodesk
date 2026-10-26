@@ -13,6 +13,16 @@ const DAYS   = ['Lun','Mar','Mer','Jeu','Ven','Sam']
 const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
 const MOTIFS = ['Aphasie post-AVC','Bégaiement','Retard de langage','Trisomie 21','Dyslexie / Dysorthographie','TSA (Autisme)','Dysphagie','Dysphonie','Autre']
 
+function parseMotifs(value) {
+  if (!value) return []
+  if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean)
+  return String(value).split(',').map(v => v.trim()).filter(Boolean)
+}
+
+function formatMotifs(value) {
+  return parseMotifs(value).join(', ')
+}
+
 function fmt(d){ return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()) }
 function p2(n){ return String(n).padStart(2,'0') }
 function addDays(d,n){ let x=new Date(d); x.setDate(x.getDate()+n); return x }
@@ -24,6 +34,23 @@ function formatDateFr(dateStr) {
   const [y, m, d] = dateStr.split('-')
   const mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre']
   return `${parseInt(d)} ${mois[parseInt(m)-1]} ${y}`
+}
+
+function parseMotifsForForm(value) {
+  const list = parseMotifs(value)
+  const known = list.filter(item => MOTIFS.includes(item))
+  const custom = list.filter(item => !MOTIFS.includes(item)).join(', ')
+  return { selected: known, custom }
+}
+
+function buildMotifValue(selected, custom) {
+  const cleaned = Array.isArray(selected) ? selected.filter(Boolean) : []
+  const customValues = String(custom || '').split(',').map(v => v.trim()).filter(Boolean)
+  const values = customValues.length > 0
+    ? [...cleaned.filter(item => item !== 'Autre'), ...customValues]
+    : [...cleaned]
+  if (!values.length) return ''
+  return values.join(', ')
 }
 
 function cleanPhone(tel) {
@@ -118,7 +145,7 @@ export default function Agenda({ session }) {
   const [selType, setSelType]     = useState('bilan')
   const [popup, setPopup]         = useState(null)
   const [newPatModal, setNewPatModal] = useState(false)
-  const [newPatForm, setNewPatForm]   = useState({ prenom:'', nom:'', dob:'', sexe:'', motif:'' })
+  const [newPatForm, setNewPatForm]   = useState({ prenom:'', nom:'', dob:'', sexe:'', motif:[], motif_autre:'' })
   const [savingPat, setSavingPat]     = useState(false)
 
   const isMobile = useIsMobile()
@@ -146,7 +173,7 @@ export default function Agenda({ session }) {
       nom:     newPatForm.nom,
       dob:     newPatForm.dob   || null,
       sexe:    newPatForm.sexe  || null,
-      motif:   newPatForm.motif || null,
+      motif:   buildMotifValue(newPatForm.motif, newPatForm.motif_autre),
       statut:  'actif',
       user_id: session.user.id,
     }).select().single()
@@ -156,7 +183,7 @@ export default function Agenda({ session }) {
     }
     setSavingPat(false)
     setNewPatModal(false)
-    setNewPatForm({ prenom:'', nom:'', dob:'', sexe:'', motif:'' })
+    setNewPatForm({ prenom:'', nom:'', dob:'', sexe:'', motif:[], motif_autre:'' })
   }
 
   async function saveRdv() {
@@ -432,12 +459,29 @@ export default function Agenda({ session }) {
                 </div>
               </div>
               <div className="fg">
-                <label className="fl">Motif principal</label>
-                <select className="fi" value={newPatForm.motif}
-                  onChange={e => setNewPatForm({...newPatForm, motif:e.target.value})}>
-                  <option value="">Sélectionner…</option>
+                <label className="fl">Motifs de consultation</label>
+                <select
+                  className="fi"
+                  multiple
+                  size={MOTIFS.length + 1}
+                  value={newPatForm.motif}
+                  onChange={e => {
+                    const nextValues = Array.from(e.target.selectedOptions).map(o => o.value)
+                    setNewPatForm({ ...newPatForm, motif: nextValues })
+                  }}
+                >
                   {MOTIFS.map(m => <option key={m} value={m}>{m}</option>)}
+                  <option value="Autre">Autre</option>
                 </select>
+                {newPatForm.motif.includes('Autre') && (
+                  <input
+                    className="fi"
+                    value={newPatForm.motif_autre || ''}
+                    onChange={e => setNewPatForm({ ...newPatForm, motif_autre: e.target.value })}
+                    placeholder="Précisez le motif…"
+                    style={{ marginTop:8 }}
+                  />
+                )}
               </div>
               <div style={{fontSize:11, color:'#8A9BB0', fontStyle:'italic'}}>
                 * Champs obligatoires. Les autres informations peuvent être complétées depuis le module Patients.

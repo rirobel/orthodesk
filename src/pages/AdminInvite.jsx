@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
+import './AdminInvite.css'
 
 export default function AdminInvite({ session }) {
   const navigate = useNavigate()
@@ -30,31 +31,28 @@ export default function AdminInvite({ session }) {
     setMsg('')
     setError('')
 
-    // Utilise l'API Supabase Admin via fetch
-    // Nécessite que tu ajoutes une Edge Function OU qu'on utilise
-    // la méthode signUp avec email_confirm: true via service_role
-    // Solution simple : on utilise supabase.auth.admin via une edge function
-    // Pour l'instant : invite via l'API REST Supabase Admin
     try {
-     const res = await fetch(
-  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-user`,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.access_token}`,
-    },
-    body: JSON.stringify({ email }),
-  }
-)
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+          }),
+        }
+      )
       const data = await res.json()
 
       if (!res.ok) {
-        // Erreur connue : utilisateur déjà invité
-        if (data?.msg?.includes('already') || data?.error_description?.includes('already')) {
-          setError('Cet email a déjà été invité ou est déjà inscrit.')
+        const errorMessage = data?.error || data?.msg || data?.error_description || ''
+        if (/already|registered|exists|inscrit|invité/i.test(errorMessage)) {
+          setError('Cet email existe déjà dans Supabase Auth, même si son profil a été supprimé. Vérifie Authentication → Users.')
         } else {
-          setError(data?.msg || data?.error_description || 'Erreur lors de l\'invitation.')
+          setError(errorMessage || 'Erreur lors de l\'invitation.')
         }
       } else {
         setMsg(`✅ Invitation envoyée à ${email}`)
@@ -67,25 +65,10 @@ export default function AdminInvite({ session }) {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f4f7fb',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '2rem 1rem',
-      fontFamily: 'DM Sans, sans-serif',
-    }}>
+    <div className="adminPage">
 
       {/* Header */}
-      <div style={{
-        width: '100%',
-        maxWidth: 560,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '2rem',
-      }}>
+      <div className="adminHeader">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
             <ellipse cx="10" cy="10" rx="7" ry="6" stroke="#0C447C" strokeWidth="1.5"/>
@@ -110,15 +93,7 @@ export default function AdminInvite({ session }) {
       </div>
 
       {/* Carte invitation */}
-      <div style={{
-        width: '100%',
-        maxWidth: 560,
-        background: '#fff',
-        borderRadius: 16,
-        padding: '2rem',
-        boxShadow: '0 2px 16px rgba(12,68,124,0.08)',
-        marginBottom: '1.5rem',
-      }}>
+      <div className="adminCard">
         <h2 style={{ margin: '0 0 0.4rem', color: '#0C447C', fontSize: '1.25rem' }}>
           Inviter une orthophoniste
         </h2>
@@ -126,39 +101,19 @@ export default function AdminInvite({ session }) {
           Elle recevra un email avec un lien pour définir son mot de passe.
         </p>
 
-        <form onSubmit={handleInvite} style={{ display: 'flex', gap: 10 }}>
+        <form onSubmit={handleInvite} className="adminInviteForm">
           <input
+            className="adminInviteEmail"
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="email@orthophoniste.com"
             required
-            style={{
-              flex: 1,
-              padding: '10px 14px',
-              borderRadius: 10,
-              border: '1.5px solid #dce3ef',
-              fontSize: '0.95rem',
-              outline: 'none',
-              fontFamily: 'DM Sans, sans-serif',
-            }}
           />
           <button
+            className="adminInviteSubmit"
             type="submit"
             disabled={loading}
-            style={{
-              background: '#0C447C',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 10,
-              padding: '10px 20px',
-              fontWeight: 600,
-              fontSize: '0.92rem',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              whiteSpace: 'nowrap',
-              fontFamily: 'DM Sans, sans-serif',
-            }}
           >
             {loading ? 'Envoi...' : 'Envoyer l\'invitation'}
           </button>
@@ -169,14 +124,7 @@ export default function AdminInvite({ session }) {
       </div>
 
       {/* Liste utilisateurs inscrits */}
-      <div style={{
-        width: '100%',
-        maxWidth: 560,
-        background: '#fff',
-        borderRadius: 16,
-        padding: '2rem',
-        boxShadow: '0 2px 16px rgba(12,68,124,0.08)',
-      }}>
+      <div className="adminCard adminUsersCard">
         <h3 style={{ margin: '0 0 1.2rem', color: '#0C447C', fontSize: '1.05rem' }}>
           Orthophonistes inscrites ({users.length})
         </h3>

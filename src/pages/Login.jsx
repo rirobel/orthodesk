@@ -34,9 +34,13 @@ export default function Login() {
   // Reset mot de passe
   const [forgotMode, setForgotMode]   = useState(false)
   const [resetEmail, setResetEmail]   = useState('')
+  const [resetToken, setResetToken]   = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [resetSent, setResetSent]     = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
   const [resetError, setResetError]   = useState('')
+  const [resetSuccess, setResetSuccess] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -49,17 +53,80 @@ export default function Login() {
 
   async function handleResetPassword(e) {
     e.preventDefault()
-    if (!resetEmail) { setResetError('Veuillez saisir votre email.'); return }
+    if (!resetEmail) {
+      setResetError('Veuillez saisir votre adresse email.')
+      return
+    }
+
     setResetLoading(true)
     setResetError('')
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    setResetLoading(false)
-    if (error) {
-      setResetError('Erreur lors de l\'envoi. Vérifiez l\'adresse email.')
-    } else {
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: 'https://orthodesk.ma/reset-password',
+      })
+
+      if (error) {
+        throw error
+      }
+
       setResetSent(true)
+    } catch (err) {
+      setResetError(err.message || 'Impossible d’envoyer l’email de récupération.')
+    } finally {
+      setResetLoading(false)
+    }
+  }
+
+  async function handleConfirmResetPassword(e) {
+    e.preventDefault()
+
+    if (!resetToken.trim()) {
+      setResetError('Veuillez saisir le code reçu.')
+      return
+    }
+
+    if (newPassword.length < 8) {
+      setResetError('Le mot de passe doit contenir au moins 8 caractères.')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setResetError('Les deux mots de passe ne correspondent pas.')
+      return
+    }
+
+    setResetLoading(true)
+    setResetError('')
+
+    try {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: resetEmail.trim(),
+        token: resetToken.trim(),
+        type: 'recovery',
+      })
+
+      if (verifyError) {
+        throw verifyError
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
+      if (updateError) {
+        throw updateError
+      }
+
+      setForgotMode(false)
+      setResetSent(false)
+      setResetEmail('')
+      setResetToken('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setResetError('')
+      setResetSuccess(true)
+    } catch (err) {
+      setResetError(err.message || 'Erreur lors du changement de mot de passe.')
+    } finally {
+      setResetLoading(false)
     }
   }
 
@@ -117,7 +184,7 @@ export default function Login() {
               <div style={{ textAlign: 'right', marginTop: -4 }}>
                 <button type="button"
                   style={{ background:'none', border:'none', color:'#0C447C', fontSize:12, cursor:'pointer', textDecoration:'underline', fontFamily:'inherit', padding:0 }}
-                  onClick={() => { setForgotMode(true); setResetEmail(email); setError('') }}>
+                  onClick={() => { setForgotMode(true); setResetEmail(email); setError(''); setResetSuccess(false) }}>
                   Mot de passe oublié ?
                 </button>
               </div>
@@ -143,10 +210,22 @@ export default function Login() {
           <>
             <h2 className="title">Mot de passe oublié</h2>
 
-            {!resetSent ? (
+            {resetSuccess ? (
+              <div style={{ textAlign:'center', padding:'16px 0 8px', display:'flex', flexDirection:'column', alignItems:'center', gap:14 }}>
+                <div style={{ width:60, height:60, borderRadius:'50%', background:'#E8F5EE', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>
+                  ✓
+                </div>
+                <div style={{ fontFamily:'Georgia, serif', fontSize:18, color:'#0C447C' }}>
+                  Mot de passe modifié
+                </div>
+                <div style={{ fontSize:13, color:'#4A6080', lineHeight:1.7, maxWidth:330 }}>
+                  Votre nouveau mot de passe est enregistré. Vous pouvez vous connecter.
+                </div>
+              </div>
+            ) : !resetSent ? (
               <>
                 <p className="subtitle">
-                  Saisissez votre email. Vous recevrez un lien pour créer un nouveau mot de passe.
+                  Saisissez votre adresse email. Nous vous enverrons un code de récupération.
                 </p>
                 <form onSubmit={handleResetPassword} className="form">
                   <div className="fg">
@@ -159,33 +238,66 @@ export default function Login() {
                   {resetError && <div className="error">{resetError}</div>}
 
                   <button className="btn" type="submit" disabled={resetLoading}>
-                    {resetLoading ? 'Envoi en cours…' : 'Envoyer le lien de réinitialisation'}
+                    {resetLoading ? 'Envoi en cours...' : 'Envoyer le code par email'}
                   </button>
                 </form>
               </>
             ) : (
-              /* ── Email envoyé ── */
               <div style={{ textAlign:'center', padding:'16px 0 8px', display:'flex', flexDirection:'column', alignItems:'center', gap:14 }}>
-                <div style={{ width:60, height:60, borderRadius:'50%', background:'#E8F5EE', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>
-                  ✉️
+                <div style={{ width:60, height:60, borderRadius:'50%', background:'#E8F5EE', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, color:'#1D7A5A' }}>
+                  @
                 </div>
                 <div style={{ fontFamily:'Georgia, serif', fontSize:18, color:'#0C447C' }}>
-                  Email envoyé !
+                  Vérifiez votre email
                 </div>
-                <div style={{ fontSize:13, color:'#4A6080', lineHeight:1.7, maxWidth:300 }}>
-                  Un lien de réinitialisation a été envoyé à <strong>{resetEmail}</strong>.<br/>
-                  Vérifiez votre boîte mail (et les spams).
+                <div style={{ fontSize:13, color:'#4A6080', lineHeight:1.7, maxWidth:330 }}>
+                  Si cette adresse correspond à un compte, un email de récupération a été envoyé à <strong>{resetEmail}</strong>. Saisissez le code indiqué dans cet email.
                 </div>
-                <div style={{ fontSize:11, color:'#8A9BB0', fontStyle:'italic' }}>
-                  Le lien expire dans 1 heure.
-                </div>
+
+                <form onSubmit={handleConfirmResetPassword} className="form" style={{ width: '100%' }}>
+                  <div className="fg">
+                    <label className="label">Code reçu par email</label>
+                    <input className="input" type="text" value={resetToken}
+                      onChange={e => setResetToken(e.target.value)}
+                      placeholder="Collez le code de récupération" required autoComplete="one-time-code" />
+                  </div>
+
+                  <div className="fg">
+                    <label className="label">Nouveau mot de passe</label>
+                    <input className="input" type="password" value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      placeholder="••••••••" required />
+                  </div>
+
+                  <div className="fg">
+                    <label className="label">Confirmer le mot de passe</label>
+                    <input className="input" type="password" value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••" required />
+                  </div>
+
+                  {resetError && <div className="error">{resetError}</div>}
+
+                  <button className="btn" type="submit" disabled={resetLoading}>
+                    {resetLoading ? 'Mise à jour...' : 'Changer le mot de passe'}
+                  </button>
+                </form>
               </div>
             )}
 
             <div style={{ textAlign:'center', marginTop:16 }}>
               <button type="button"
                 style={{ background:'none', border:'none', color:'#8A9BB0', fontSize:12, cursor:'pointer', textDecoration:'underline', fontFamily:'inherit' }}
-                onClick={() => { setForgotMode(false); setResetSent(false); setResetError('') }}>
+                onClick={() => {
+                  setForgotMode(false)
+                  setResetSent(false)
+                  setResetError('')
+                  setResetEmail('')
+                  setResetToken('')
+                  setNewPassword('')
+                  setConfirmPassword('')
+                  setResetSuccess(false)
+                }}>
                 ← Retour à la connexion
               </button>
             </div>

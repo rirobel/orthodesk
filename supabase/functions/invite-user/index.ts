@@ -36,7 +36,9 @@ Deno.serve(async (req) => {
     }
 
     // Envoyer l'invitation
-    const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email)
+    const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      redirectTo: 'https://orthodesk.ma/set-password',
+    })
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders })
     }

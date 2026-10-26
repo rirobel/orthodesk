@@ -49,6 +49,12 @@ const STATUT_COLORS = {
   finalisé:   { bg: '#E8F5EE', color: '#1D7A5A' },
 }
 
+const AVANCEMENT_BADGE = {
+  en_cours:  { bg: '#EBF2F9', color: '#185FA5', label: '🔵 En cours' },
+  suspendu:  { bg: '#FFF3CD', color: '#8B5A00', label: '⏸ Suspendu' },
+  termine:   { bg: '#E8F5EE', color: '#1D7A5A', label: '✅ Terminé' },
+}
+
 // ─── Rendu d'un champ selon son type ─────────────────────────────────────────
 function ChampField({ champ, value, onChange }) {
   const v = value ?? ''
@@ -208,14 +214,19 @@ function TableauPhonemes({ champs, donnees, onChange, deuxColonnes = false }) {
 
 // ─── Formulaire bilan (stepper par section) ───────────────────────────────────
 function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
-  const [step, setStep]       = useState(0)
+  const estReprise = bilan?.statut_avancement === 'suspendu'
+  const seanceNum  = bilan?.seance_actuelle || 1
+  const historiqueSeances = bilan?.historique_seances || []
+
+  const [step, setStep]       = useState(estReprise ? 1 : 0) // reprise → sauter la config
   const [templateId, setTemplateId] = useState(bilan?.template_id || '')
   const [patientId, setPatientId]   = useState(bilan?.patient_id || '')
-  const [date, setDate]       = useState(bilan?.date || new Date().toISOString().slice(0, 10))
+  const [date, setDate]       = useState(new Date().toISOString().slice(0, 10))
   const [statut, setStatut]   = useState(bilan?.statut || 'brouillon')
   const [donnees, setDonnees] = useState(bilan?.donnees || {})
   const [conclusion, setConclusion] = useState(bilan?.conclusion || '')
   const [saving, setSaving]   = useState(false)
+  const [confirmSuspend, setConfirmSuspend] = useState(false)
 
   function useIsMobile() {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
@@ -234,18 +245,65 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
   const totalSteps = sections.length + 2 // 0=config, 1..n=sections, n+1=conclusion
 
   function setChamp(id, val) {
+    // En mode reprise, ne pas modifier les champs des séances précédentes
     setDonnees(d => ({ ...d, [id]: val }))
   }
 
+  // Vérifier si un champ a été rempli dans une séance précédente (lecture seule)
+  function estChampAncienneSeance(champId) {
+    if (!estReprise || historiqueSeances.length === 0) return false
+    return historiqueSeances.some(s => s.donnees && s.donnees[champId] !== undefined && s.donnees[champId] !== '')
+  }
+
+  // Sauvegarder et suspendre (arrêter à cette séance, reprendre la prochaine fois)
+  async function handleSuspendre() {
+    if (!patientId || !templateId) return
+    setSaving(true)
+    // Archiver la séance courante dans l'historique
+    const nouvelHistorique = [
+      ...historiqueSeances,
+      { seance: seanceNum, date: date, donnees: { ...donnees } }
+    ]
+    const payload = {
+      donnees,
+      conclusion,
+      statut: 'brouillon',
+      statut_avancement: 'suspendu',
+      seance_actuelle: seanceNum + 1,
+      historique_seances: nouvelHistorique,
+    }
+    if (bilan?.id) {
+      await supabase.from('bilans').update(payload).eq('id', bilan.id)
+    } else {
+      await supabase.from('bilans').insert({
+        user_id: session.user.id,
+        patient_id: Number(patientId),
+        template_id: Number(templateId),
+        date,
+        ...payload,
+      })
+    }
+    setSaving(false)
+    setConfirmSuspend(false)
+    onSave()
+  }
+
+  // Finaliser complètement le bilan
   async function handleSave(statutFinal) {
     if (!patientId || !templateId) { alert('Sélectionnez un patient et un type de bilan.'); return }
     setSaving(true)
+    // Si on finalisait depuis une reprise, on archive aussi la dernière séance
+    const nouvelHistorique = estReprise
+      ? [...historiqueSeances, { seance: seanceNum, date: date, donnees: { ...donnees } }]
+      : historiqueSeances
     const payload = {
       user_id: session.user.id,
       patient_id: Number(patientId),
       template_id: Number(templateId),
       date, statut: statutFinal || statut,
+      statut_avancement: 'termine',
       donnees, conclusion,
+      historique_seances: nouvelHistorique,
     }
     if (bilan?.id) {
       await supabase.from('bilans').update(payload).eq('id', bilan.id)
@@ -264,22 +322,71 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
 
   return (
     <div style={S.overlay} onClick={onClose}>
-      <div style={{ ...S.modalBox, maxWidth: isMobile ? '100%' : 680 }} onClick={e => e.stopPropagation()}>
+      <div style={{ ...S.modalBox, maxWidth: isMobile ? '100%' : 700 }} onClick={e => e.stopPropagation()}>
+
+        {/* Popup confirmation suspension */}
+        {confirmSuspend && (
+          <div style={{
+            position: 'absolute', inset: 0, background: 'rgba(10,30,60,0.6)',
+            zIndex: 10, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+          }}>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 24, maxWidth: 360, textAlign: 'center' }}>
+              <div style={{ fontSize: 32, marginBottom: 10 }}>⏸</div>
+              <div style={{ fontFamily: 'Georgia, serif', fontSize: 17, color: '#0C447C', marginBottom: 8 }}>
+                Arrêter la séance {seanceNum} ?
+              </div>
+              <div style={{ fontSize: 13, color: '#4A6080', lineHeight: 1.6, marginBottom: 18 }}>
+                Les données saisies seront sauvegardées. Vous pourrez reprendre la séance {seanceNum + 1} lors du prochain rendez-vous.
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+                <button style={S.cancelBtn} onClick={() => setConfirmSuspend(false)}>Annuler</button>
+                <button style={{
+                  padding: '9px 18px', background: '#E89020', color: '#fff',
+                  border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                }} onClick={handleSuspendre} disabled={saving}>
+                  {saving ? 'Sauvegarde…' : '⏸ Confirmer l\'arrêt'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Header */}
         <div style={S.modalHead}>
           <div>
             <span style={S.modalTitle}>
-              {bilan ? 'Modifier le bilan' : 'Nouveau bilan'}
+              {estReprise
+                ? `Reprendre le bilan — Séance ${seanceNum}`
+                : bilan ? 'Modifier le bilan' : 'Nouveau bilan'}
             </span>
             {template && (
               <div style={{ fontSize: 11, color: '#8A9BB0', marginTop: 3 }}>
                 {template.nom} — étape {step + 1}/{totalSteps}
+                {estReprise && (
+                  <span style={{ marginLeft: 8, background: '#FFF3CD', color: '#8B5A00', padding: '1px 7px', borderRadius: 10, fontWeight: 700 }}>
+                    ⏸ Reprise séance {seanceNum}
+                  </span>
+                )}
               </div>
             )}
           </div>
           <button style={S.closeBtn} onClick={onClose}>✕</button>
         </div>
+
+        {/* Historique séances précédentes (bandeau) */}
+        {estReprise && historiqueSeances.length > 0 && (
+          <div style={{ background: '#F0F4F9', borderBottom: '1px solid #DDE5EF', padding: '8px 22px', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 11, color: '#8A9BB0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Séances passées :</span>
+            {historiqueSeances.map((s, i) => (
+              <span key={i} style={{ fontSize: 11, background: '#E8F5EE', color: '#1D7A5A', fontWeight: 700, padding: '2px 9px', borderRadius: 20 }}>
+                ✓ Séance {s.seance} — {new Date(s.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+              </span>
+            ))}
+            <span style={{ fontSize: 11, background: '#FFF3CD', color: '#8B5A00', fontWeight: 700, padding: '2px 9px', borderRadius: 20 }}>
+              ▶ Séance {seanceNum} — aujourd'hui
+            </span>
+          </div>
+        )}
 
         {/* Barre de progression */}
         {template && (
@@ -291,8 +398,8 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
         {/* Corps */}
         <div style={S.modalBody}>
 
-          {/* Étape 0 — config */}
-          {step === 0 && (
+          {/* Étape 0 — config (masquée en mode reprise) */}
+          {step === 0 && !estReprise && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={S.sectionLabel}>Configuration du bilan</div>
 
@@ -354,7 +461,8 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
                 <GrilleOuiNon
                   champs={currentSection.champs}
                   donnees={donnees}
-                  onChange={(id, val) => setChamp(id, val)}
+                  onChange={(id, val) => !estChampAncienneSeance(id) && setChamp(id, val)}
+                  readonlyIds={estReprise ? historiqueSeances.flatMap(s => Object.keys(s.donnees || {})) : []}
                 />
               )}
 
@@ -363,7 +471,7 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
                 <TableauPhonemes
                   champs={currentSection.champs}
                   donnees={donnees}
-                  onChange={(id, val) => setChamp(id, val)}
+                  onChange={(id, val) => !estChampAncienneSeance(id) && setChamp(id, val)}
                   deuxColonnes={false}
                 />
               )}
@@ -373,22 +481,34 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
                 <TableauPhonemes
                   champs={currentSection.champs}
                   donnees={donnees}
-                  onChange={(id, val) => setChamp(id, val)}
+                  onChange={(id, val) => !estChampAncienneSeance(id) && setChamp(id, val)}
                   deuxColonnes={true}
                 />
               )}
 
               {/* Champs standard */}
-              {!currentSection.type_section && currentSection.champs.map(c => (
-                <div key={c.id} style={S.fg}>
-                  <label style={S.fl}>{c.label}</label>
-                  <ChampField
-                    champ={c}
-                    value={donnees[c.id]}
-                    onChange={val => setChamp(c.id, val)}
-                  />
-                </div>
-              ))}
+              {!currentSection.type_section && currentSection.champs.map(c => {
+                const readOnly = estChampAncienneSeance(c.id)
+                return (
+                  <div key={c.id} style={S.fg}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <label style={S.fl}>{c.label}</label>
+                      {readOnly && (
+                        <span style={{ fontSize: 10, background: '#E8F5EE', color: '#1D7A5A', padding: '1px 6px', borderRadius: 10, fontWeight: 700 }}>
+                          ✓ Séance précédente
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ opacity: readOnly ? 0.6 : 1, pointerEvents: readOnly ? 'none' : 'auto' }}>
+                      <ChampField
+                        champ={c}
+                        value={donnees[c.id]}
+                        onChange={val => setChamp(c.id, val)}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
 
@@ -402,7 +522,9 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
               <textarea style={{ ...S.fi, minHeight: 180, resize: 'vertical' }}
                 value={conclusion} onChange={e => setConclusion(e.target.value)}
                 placeholder="Rédigez ici la conclusion du bilan…" />
-              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+
+              {/* Boutons finaliser */}
+              <div style={{ display: 'flex', gap: 8 }}>
                 <button style={{
                   ...S.saveBtn, background: '#F0F4F9', color: '#0C447C',
                   border: '1.5px solid #0C447C', flex: 1
@@ -420,41 +542,56 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
         </div>
 
         {/* Footer navigation */}
-        <div style={{ ...S.modalFoot, justifyContent: 'space-between' }}>
-          <button style={S.cancelBtn}
-            onClick={() => step === 0 ? onClose() : setStep(s => s - 1)}>
-            {step === 0 ? 'Annuler' : '← Précédent'}
-          </button>
+        <div style={{ ...S.modalFoot, flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
 
-          {/* Indicateurs section */}
-          {template && (
-            <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-              {Array.from({ length: totalSteps }).map((_, i) => (
-                <div key={i} onClick={() => setStep(i)}
-                  style={{
-                    width: i === step ? 20 : 6, height: 6, borderRadius: 3,
-                    background: i === step ? '#0C447C' : i < step ? '#3B82C4' : '#DDE5EF',
-                    cursor: 'pointer', transition: 'all .2s',
-                  }} />
-              ))}
-            </div>
-          )}
-
-          {currentSection !== 'conclusion' && (
-            <button style={S.saveBtn}
-              onClick={() => {
-                if (step === 0 && (!patientId || !templateId)) {
-                  alert('Sélectionnez un patient et un type de bilan.')
-                  return
-                }
-                if (step < totalSteps - 1) setStep(s => s + 1)
-              }}>
-              {step === totalSteps - 2 ? 'Conclusion →' : 'Suivant →'}
+          {/* Bouton ⏸ Arrêter — visible sur toutes les étapes sauf config */}
+          {step > 0 && (patientId && templateId) && (
+            <button style={{
+              padding: '9px 16px', background: '#FFF3CD', color: '#8B5A00',
+              border: '1.5px solid #E89020', borderRadius: 8, fontSize: 12, fontWeight: 700,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }} onClick={() => setConfirmSuspend(true)} disabled={saving}>
+              ⏸ Arrêter la séance — reprendre à la prochaine fois
             </button>
           )}
-          {currentSection === 'conclusion' && (
-            <div style={{ width: 80 }} />
-          )}
+
+          {/* Navigation Précédent / points / Suivant */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <button style={S.cancelBtn}
+              onClick={() => step === 0 ? onClose() : setStep(s => s - 1)}>
+              {step === 0 ? 'Annuler' : '← Précédent'}
+            </button>
+
+            {/* Indicateurs section */}
+            {template && (
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                {Array.from({ length: totalSteps }).map((_, i) => (
+                  <div key={i} onClick={() => setStep(i)}
+                    style={{
+                      width: i === step ? 20 : 6, height: 6, borderRadius: 3,
+                      background: i === step ? '#0C447C' : i < step ? '#3B82C4' : '#DDE5EF',
+                      cursor: 'pointer', transition: 'all .2s',
+                    }} />
+                ))}
+              </div>
+            )}
+
+            {currentSection !== 'conclusion' && (
+              <button style={S.saveBtn}
+                onClick={() => {
+                  if (step === 0 && (!patientId || !templateId)) {
+                    alert('Sélectionnez un patient et un type de bilan.')
+                    return
+                  }
+                  if (step < totalSteps - 1) setStep(s => s + 1)
+                }}>
+                {step === totalSteps - 2 ? 'Conclusion →' : 'Suivant →'}
+              </button>
+            )}
+            {currentSection === 'conclusion' && (
+              <div style={{ width: 80 }} />
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -852,7 +989,11 @@ export default function Bilans({ session }) {
     return nom.includes(search.toLowerCase()) ||
       (b.bilan_templates?.pathologie || '').toLowerCase().includes(search.toLowerCase())
   })
-  if (filter !== 'tous') filtered = filtered.filter(b => b.statut === filter)
+  if (filter === 'suspendu') {
+    filtered = filtered.filter(b => b.statut_avancement === 'suspendu')
+  } else if (filter !== 'tous') {
+    filtered = filtered.filter(b => b.statut === filter)
+  }
 
   const selected = bilans.find(b => b.id === selectedId)
   const selTemplate = selected ? templates.find(t => t.id === selected.template_id) : null
@@ -881,6 +1022,13 @@ export default function Bilans({ session }) {
             </div>
             <div style={S.statLbl}>Brouillons</div>
           </div>
+          <div style={S.statDiv} />
+          <div style={S.statItem}>
+            <div style={{ ...S.statVal, color: '#E89020' }}>
+              {bilans.filter(b => b.statut_avancement === 'suspendu').length}
+            </div>
+            <div style={S.statLbl}>Suspendus</div>
+          </div>
         </div>
 
         <div style={S.listHeader}>
@@ -895,10 +1043,10 @@ export default function Bilans({ session }) {
             )}
           </div>
           <div style={S.filters}>
-            {['tous', 'brouillon', 'finalisé'].map(f => (
+            {['tous', 'brouillon', 'finalisé', 'suspendu'].map(f => (
               <button key={f} style={{ ...S.filterBtn, ...(filter === f ? S.filterActive : {}) }}
                 onClick={() => setFilter(f)}>
-                {f === 'tous' ? 'Tous' : f.charAt(0).toUpperCase() + f.slice(1)}
+                {f === 'tous' ? 'Tous' : f === 'suspendu' ? '⏸ Suspendus' : f.charAt(0).toUpperCase() + f.slice(1)}
               </button>
             ))}
           </div>
@@ -912,9 +1060,14 @@ export default function Bilans({ session }) {
             const nom = b.patients ? `${b.patients.prenom} ${b.patients.nom}` : '—'
             const col = patColor(b.patient_id)
             const sc  = STATUT_COLORS[b.statut] || STATUT_COLORS.brouillon
+            const estSuspendu = b.statut_avancement === 'suspendu'
             return (
               <div key={b.id}
-                style={{ ...S.bilanCard, ...(selectedId === b.id ? S.bilanCardSel : {}) }}
+                style={{
+                  ...S.bilanCard,
+                  ...(selectedId === b.id ? S.bilanCardSel : {}),
+                  ...(estSuspendu ? { borderColor: '#E89020', borderWidth: '1.5px', borderStyle: 'solid' } : {}),
+                }}
                 onClick={() => { setSelectedId(b.id); if (isMobile) setShowDetail(true) }}>
                 <div style={{ ...S.patAv, background: col + '22', color: col }}>
                   {initials(nom)}
@@ -923,10 +1076,32 @@ export default function Bilans({ session }) {
                   <div style={S.bilanPatient}>{nom}</div>
                   <div style={S.bilanMeta}>{b.bilan_templates?.pathologie || '—'}</div>
                   <div style={S.bilanDate}>{fmtDate(b.date)}</div>
+                  {estSuspendu && (
+                    <div style={{ fontSize: 10, color: '#8B5A00', fontWeight: 700, marginTop: 2 }}>
+                      ⏸ Séance {b.seance_actuelle} à venir
+                    </div>
+                  )}
                 </div>
-                <span style={{ ...S.statBadge, background: sc.bg, color: sc.color }}>
-                  {b.statut}
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                  <span style={{ ...S.statBadge, background: sc.bg, color: sc.color }}>
+                    {b.statut}
+                  </span>
+                  {estSuspendu && (
+                    <button
+                      style={{
+                        fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+                        background: '#E89020', color: '#fff', border: 'none', cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                      onClick={e => {
+                        e.stopPropagation()
+                        setEditBilan(b)
+                        setModal(true)
+                      }}>
+                      ▶ Continuer
+                    </button>
+                  )}
+                </div>
               </div>
             )
           })}
@@ -983,6 +1158,16 @@ export default function Bilans({ session }) {
                   }}>
                     {selected.statut}
                   </span>
+                  {selected.statut_avancement && AVANCEMENT_BADGE[selected.statut_avancement] && (
+                    <span style={{
+                      ...S.pdTag,
+                      background: AVANCEMENT_BADGE[selected.statut_avancement].bg,
+                      color: AVANCEMENT_BADGE[selected.statut_avancement].color,
+                    }}>
+                      {AVANCEMENT_BADGE[selected.statut_avancement].label}
+                      {selected.statut_avancement === 'suspendu' && ` — Séance ${selected.seance_actuelle} à venir`}
+                    </span>
+                  )}
                   {selected.bilan_templates?.pathologie && (
                     <span style={{ ...S.pdTag, background: '#EBF2F9', color: '#185FA5' }}>
                       {selected.bilan_templates.pathologie}
@@ -992,10 +1177,20 @@ export default function Bilans({ session }) {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                  <button style={S.editBtn}
-                    onClick={() => { setEditBilan(selected); setModal(true) }}>
-                    ✏️ Modifier
-                  </button>
+                  {selected.statut_avancement === 'suspendu' ? (
+                    <button style={{
+                      ...S.editBtn, background: '#E89020', color: '#fff',
+                      border: 'none', fontWeight: 700,
+                    }}
+                      onClick={() => { setEditBilan(selected); setModal(true) }}>
+                      ▶ Continuer — Séance {selected.seance_actuelle}
+                    </button>
+                  ) : (
+                    <button style={S.editBtn}
+                      onClick={() => { setEditBilan(selected); setModal(true) }}>
+                      ✏️ Modifier
+                    </button>
+                  )}
                   <button style={{
                     ...S.editBtn,
                     background: STATUT_COLORS[selected.statut === 'brouillon' ? 'finalisé' : 'brouillon'].bg,
@@ -1020,6 +1215,47 @@ export default function Bilans({ session }) {
                 </button>
               </div>
             </div>
+
+            {/* Historique des séances */}
+            {selected.historique_seances && selected.historique_seances.length > 0 && (
+              <div style={S.pdCard}>
+                <div style={S.pdCardTitle}>Historique des séances</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {selected.historique_seances.map((s, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '8px 12px', background: '#F8FAFC', borderRadius: 8,
+                      border: '1px solid #EEF2F7',
+                    }}>
+                      <span style={{ fontSize: 18 }}>✅</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2744' }}>
+                          Séance {s.seance}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#8A9BB0' }}>
+                          {s.date ? new Date(s.date).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }) : '—'}
+                        </div>
+                      </div>
+                      <span style={{ marginLeft: 'auto', fontSize: 11, color: '#1D7A5A', fontWeight: 600 }}>
+                        {Object.values(s.donnees || {}).filter(v => v !== '' && v !== null && v !== undefined && !(Array.isArray(v) && !v.length)).length} champs renseignés
+                      </span>
+                    </div>
+                  ))}
+                  {selected.statut_avancement === 'suspendu' && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '8px 12px', background: '#FFF3CD', borderRadius: 8,
+                      border: '1px dashed #E89020',
+                    }}>
+                      <span style={{ fontSize: 18 }}>⏳</span>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#8B5A00' }}>
+                        Séance {selected.seance_actuelle} — à venir
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Contenu sections */}
             {selTemplate && (selTemplate.sections || []).map((section, si) => {

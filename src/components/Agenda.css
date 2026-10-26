@@ -411,10 +411,132 @@
   cursor: pointer;
 }
 
+.toolbar {
+  min-height: 62px;
+  padding: 12px 22px;
+  background: #fff;
+  border-bottom-color: #E5ECF3;
+}
+
+.arr {
+  width: 34px;
+  height: 34px;
+  color: #45617D;
+  background: #F4F7FB;
+  border: 1px solid #E7EDF4;
+  border-radius: 9px;
+}
+
+.arr:hover,
+.todayBtn:hover {
+  background: #EBF2F9;
+}
+
+.todayBtn {
+  padding: 7px 13px;
+  border-color: #DCE5EE;
+  color: #425A75;
+  border-radius: 9px;
+}
+
+.weekLbl {
+  color: #1A2744;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.addBtn,
+.saveBtn {
+  background: #0C447C;
+  border-radius: 9px;
+  box-shadow: 0 3px 9px rgba(12, 68, 124, 0.14);
+}
+
+.addBtn:hover,
+.saveBtn:hover {
+  background: #0A3660;
+}
+
+.weekHeader {
+  background: #FAFCFE;
+  border-bottom-color: #E5ECF3;
+}
+
+.whCell {
+  border-left-color: #EDF1F6;
+}
+
+.whDay {
+  color: #73839A;
+  letter-spacing: 0.08em;
+}
+
+.whNum {
+  color: #3F536C;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-size: 17px;
+}
+
+.whToday {
+  background: #0C447C;
+  box-shadow: 0 3px 8px rgba(12, 68, 124, 0.2);
+}
+
+.grid {
+  background: #fff;
+}
+
+.tSlot,
+.dSlot {
+  border-bottom-color: #EDF1F6;
+}
+
+.dayCol {
+  border-left-color: #EDF1F6;
+}
+
+.rdvCard {
+  border-radius: 9px;
+  box-shadow: 0 2px 5px rgba(26, 39, 68, 0.07);
+}
+
+.statsBar {
+  min-height: 46px;
+  background: #fff;
+  border-top-color: #E5ECF3;
+}
+
+.popup,
+.modalBox {
+  border-radius: 16px;
+  box-shadow: 0 18px 50px rgba(26, 39, 68, 0.18);
+}
+
+.modalTitle {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.fi {
+  min-height: 40px;
+  border-color: #DCE5EE;
+  border-radius: 9px;
+  color: #1A2744;
+  background: #fff;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.fi:focus {
+  border-color: #81A6CA;
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .toolbar {
-    padding: 8px 12px;
+    padding: 9px 12px;
     gap: 6px;
   }
 

@@ -1,19 +1,27 @@
 .page {
   min-height: 100vh;
-  background: #F0F4F9;
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 12% 14%, rgba(201, 168, 76, 0.13), transparent 34%),
+    radial-gradient(ellipse at 88% 82%, rgba(24, 95, 165, 0.11), transparent 38%),
+    #F5F8FC;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 28px 16px;
 }
 
 .card {
+  position: relative;
   background: #fff;
-  border-radius: 16px;
-  padding: 40px 36px;
+  border: 1px solid rgba(220, 229, 238, 0.85);
+  border-radius: 22px;
+  padding: 38px 36px;
   width: 100%;
-  max-width: 420px;
-  box-shadow: 0 8px 32px rgba(12,68,124,0.12);
+  max-width: 440px;
+  box-shadow: 0 24px 64px rgba(20, 49, 80, 0.11), 0 3px 10px rgba(20, 49, 80, 0.04);
 }
 
 .logoRow {
@@ -27,18 +35,19 @@
 .logoMark {
   width: 38px;
   height: 38px;
-  background: #C9A84C;
-  border-radius: 10px;
+  background: #F4EBD3;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .logoText {
-  font-family: 'Georgia, serif';
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
   font-size: 22px;
   color: #0C447C;
-  font-weight: 400;
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .backBtn {
@@ -81,11 +90,13 @@
 }
 
 .title {
-  font-family: 'Georgia, serif';
-  font-size: 22px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-size: 24px;
   color: #0C447C;
   margin-bottom: 6px;
   text-align: center;
+  font-weight: 700;
+  letter-spacing: -0.45px;
 }
 
 .subtitle {
@@ -123,13 +134,23 @@
 
 .input {
   width: 100%;
-  padding: 10px 42px 10px 14px;
-  border: 1.5px solid #DDE5EF;
-  border-radius: 8px;
+  padding: 12px 42px 12px 14px;
+  border: 1.5px solid #DCE5EE;
+  border-radius: 10px;
   font-size: 14px;
   font-family: 'DM Sans, sans-serif';
   outline: none;
   box-sizing: border-box;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.input:focus {
+  border-color: #81A6CA;
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
+}
+
+.page .input:focus-visible {
+  outline: none;
 }
 
 .eyeBtn {
@@ -160,14 +181,28 @@
 }
 
 .btn {
-  padding: 12px;
+  padding: 13px 16px;
   background: #0C447C;
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 700;
   margin-top: 4px;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(12, 68, 124, 0.18);
+  transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+}
+
+.btn:hover:not(:disabled) {
+  background: #0A3660;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(12, 68, 124, 0.22);
+}
+
+.btn:disabled {
+  cursor: wait;
+  opacity: 0.72;
 }
 
 .error {
@@ -232,8 +267,13 @@
 
 /* Responsive styles */
 @media (max-width: 768px) {
+  .page {
+    padding: 18px 14px;
+  }
+
   .card {
-    padding: 20px 18px;
+    padding: 28px 22px;
+    border-radius: 18px;
   }
 
   .logoText {
