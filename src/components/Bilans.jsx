@@ -213,6 +213,38 @@ function TableauPhonemes({ champs, donnees, onChange, deuxColonnes = false }) {
 }
 
 // ─── Formulaire bilan (stepper par section) ───────────────────────────────────
+// ─── Pop-up personnalisé (remplace alert / confirm natifs) ─────────────────────
+function PopupMessage({ open, icon = '⚠️', titre, message, confirmLabel = 'OK', cancelLabel, danger = false, onConfirm, onClose }) {
+  if (!open) return null
+  return (
+    <div
+      onClick={e => { e.stopPropagation(); onClose() }}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(10,30,60,0.6)',
+        zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24, fontFamily: 'DM Sans, sans-serif',
+      }}>
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 9, padding: 24, maxWidth: 360, width: '100%', textAlign: 'center', boxShadow: '0 8px 28px rgba(52,58,64,0.18)' }}>
+        <div style={{ fontSize: 32, marginBottom: 10 }}>{icon}</div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: danger ? '#C0392B' : '#7BA39D', marginBottom: 8 }}>{titre}</div>
+        <div style={{ fontSize: 13, color: '#5B6268', lineHeight: 1.6, marginBottom: 18 }}>{message}</div>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+          {cancelLabel && (
+            <button
+              style={{ padding: '9px 18px', background: '#F0F4F9', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#5B6268', cursor: 'pointer' }}
+              onClick={onClose}>{cancelLabel}</button>
+          )}
+          <button
+            style={{ padding: '9px 18px', background: danger ? '#C0392B' : '#E89020', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+            onClick={onConfirm || onClose}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
   const estReprise = bilan?.statut_avancement === 'suspendu'
   const seanceNum  = bilan?.seance_actuelle || 1
@@ -227,6 +259,7 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
   const [conclusion, setConclusion] = useState(bilan?.conclusion || '')
   const [saving, setSaving]   = useState(false)
   const [confirmSuspend, setConfirmSuspend] = useState(false)
+  const [popup, setPopup] = useState({ open: false, titre: '', message: '' })
 
   function useIsMobile() {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
@@ -290,7 +323,10 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
 
   // Finaliser complètement le bilan
   async function handleSave(statutFinal) {
-    if (!patientId || !templateId) { alert('Sélectionnez un patient et un type de bilan.'); return }
+    if (!patientId || !templateId) {
+      setPopup({ open: true, titre: 'Champs manquants', message: 'Veuillez sélectionner un patient et un type de bilan avant de continuer.' })
+      return
+    }
     setSaving(true)
     // Si on finalisait depuis une reprise, on archive aussi la dernière séance
     const nouvelHistorique = estReprise
@@ -323,6 +359,13 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
   return (
     <div style={S.overlay} onClick={onClose}>
       <div style={{ ...S.modalBox, maxWidth: isMobile ? '100%' : 700 }} onClick={e => e.stopPropagation()}>
+
+        <PopupMessage
+          open={popup.open}
+          titre={popup.titre}
+          message={popup.message}
+          onClose={() => setPopup(p => ({ ...p, open: false }))}
+        />
 
         {/* Popup confirmation suspension */}
         {confirmSuspend && (
@@ -580,7 +623,7 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
               <button style={S.saveBtn}
                 onClick={() => {
                   if (step === 0 && (!patientId || !templateId)) {
-                    alert('Sélectionnez un patient et un type de bilan.')
+                    setPopup({ open: true, titre: 'Champs manquants', message: 'Veuillez sélectionner un patient et un type de bilan avant de continuer.' })
                     return
                   }
                   if (step < totalSteps - 1) setStep(s => s + 1)
@@ -610,6 +653,7 @@ export default function Bilans({ session }) {
   const [modal, setModal]         = useState(false)
   const [editBilan, setEditBilan] = useState(null)
   const [showDetail, setShowDetail] = useState(false)
+  const [deleteId, setDeleteId]   = useState(null)
 
   function useIsMobile() {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
@@ -640,7 +684,6 @@ export default function Bilans({ session }) {
   useEffect(() => { load() }, [load])
 
   async function deleteBilan(id) {
-    if (!confirm('Supprimer ce bilan ?')) return
     await supabase.from('bilans').delete().eq('id', id)
     setSelectedId(null)
     load()
@@ -1210,7 +1253,7 @@ export default function Bilans({ session }) {
                   </button>
                 </div>
                 <button style={{ ...S.dangerBtn, fontSize: 11, padding: '4px 10px' }}
-                  onClick={() => deleteBilan(selected.id)}>
+                  onClick={() => setDeleteId(selected.id)}>
                   Supprimer
                 </button>
               </div>
@@ -1348,6 +1391,18 @@ export default function Bilans({ session }) {
           {detailPanel}
         </>
       )}
+
+      <PopupMessage
+        open={deleteId !== null}
+        icon="🗑"
+        titre="Supprimer ce bilan ?"
+        message="Cette action est irréversible. Le bilan et toutes ses données seront définitivement supprimés."
+        confirmLabel="Supprimer"
+        cancelLabel="Annuler"
+        danger
+        onClose={() => setDeleteId(null)}
+        onConfirm={() => { const id = deleteId; setDeleteId(null); deleteBilan(id) }}
+      />
 
       {/* ── MODAL ── */}
       {modal && (
