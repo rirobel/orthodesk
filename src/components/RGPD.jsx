@@ -132,18 +132,18 @@ function Section({ icon, title, children }) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
   overlay:      { position: 'fixed', inset: 0, background: 'rgba(10,30,60,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 },
-  box:          { background: '#fff', borderRadius: 16, width: '100%', maxWidth: 620, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 8px 40px rgba(12,68,124,0.2)', fontFamily: 'DM Sans, sans-serif' },
+  box:          { background: '#fff', border: '1px solid var(--line)', borderRadius: 9, width: '100%', maxWidth: 620, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 8px 28px rgba(52,58,64,0.12)', fontFamily: 'DM Sans, sans-serif' },
   header:       { padding: '20px 24px 16px', borderBottom: '1px solid #DDE5EF', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 },
-  headerTitle:  { fontFamily: 'Georgia, serif', fontSize: 20, color: '#0C447C', fontWeight: 700 },
+  headerTitle:  { fontSize: 20, color: '#343A40', fontWeight: 700 },
   headerSub:    { fontSize: 11, color: '#8A9BB0', marginTop: 3 },
   closeBtn:     { width: 30, height: 30, background: '#F0F4F9', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 14, color: '#8A9BB0', flexShrink: 0 },
   body:         { overflowY: 'auto', padding: '16px 24px', flex: 1 },
   section:      { marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid #F0F4F9' },
-  sectionTitle: { fontSize: 13, fontWeight: 700, color: '#0C447C', marginBottom: 8, display: 'flex', alignItems: 'center' },
+  sectionTitle: { fontSize: 13, fontWeight: 700, color: '#7BA39D', marginBottom: 8, display: 'flex', alignItems: 'center' },
   sectionBody:  { fontSize: 13, color: '#333', lineHeight: 1.7 },
   ul:           { margin: '6px 0 0 0', paddingLeft: 20, lineHeight: 1.9 },
   note:         { marginTop: 10, padding: '10px 14px', background: '#FEF3E2', borderRadius: 8, fontSize: 12, color: '#8B5A00', borderLeft: '3px solid #E89020' },
-  link:         { color: '#185FA5', textDecoration: 'underline' },
+  link:         { color: '#5B6268', textDecoration: 'underline' },
   footer:       { padding: '12px 24px 16px', borderTop: '1px solid #DDE5EF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 },
-  okBtn:        { padding: '8px 22px', background: '#0C447C', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
+  okBtn:        { padding: '8px 22px', background: '#7BA39D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
 }

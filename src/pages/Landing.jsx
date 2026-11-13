@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import './Dashboard.css'
 
@@ -7,17 +7,17 @@ const WA_LINK = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Bonjour, 
 
 // ── Palette & tokens ────────────────────────────────────────────────
 const C = {
-  teal:      "#0C447C",
-  tealDark:  "#0A3660",
-  tealLight: "#F0F4F9",
-  navy:      "#0C447C",
-  navyMid:   "#0C447C",
-  sand:      "#F0F4F9",
+  teal:      "#7BA39D",
+  tealDark:  "#567771",
+  tealLight: "#EDF4F1",
+  navy:      "#343A40",
+  navyMid:   "#555B60",
+  sand:      "#F4F7FB",
   white:     "#FFFFFF",
-  text:      "#1A2E3B",
+  text:      "#343A40",
   muted:     "#6B8796",
-  accent:    "#C9A84C",
-  border:    "#DCE8EC",
+  accent:    "#A9BAAA",
+  border:    "#E0E7ED",
 };
 
 const font = {
@@ -60,22 +60,22 @@ const GLOBAL_CSS = `
   .btn-primary {
     display: inline-flex; align-items: center; gap: 8px;
     background: ${C.navy}; color: ${C.white};
-    padding: 14px 28px; border-radius: 12px;
+    padding: 14px 28px; border-radius: 8px;
     font-family: ${font.body}; font-weight: 600; font-size: 15px;
     border: none; cursor: pointer; text-decoration: none;
     transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-    box-shadow: 0 4px 18px rgba(12,68,124,0.25);
+    box-shadow: 0 4px 18px rgba(52,58,64,0.25);
   }
   .btn-primary:hover {
     background: ${C.tealDark};
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(12,68,124,0.30);
+    box-shadow: 0 8px 24px rgba(52,58,64,0.30);
   }
 
   .btn-outline {
     display: inline-flex; align-items: center; gap: 8px;
     background: transparent; color: ${C.navy};
-    padding: 13px 26px; border-radius: 12px;
+    padding: 13px 26px; border-radius: 8px;
     font-family: ${font.body}; font-weight: 600; font-size: 15px;
     border: 2px solid ${C.navy}; cursor: pointer; text-decoration: none;
     transition: all 0.2s;
@@ -88,7 +88,7 @@ const GLOBAL_CSS = `
   .btn-ghost {
     display: inline-flex; align-items: center; gap: 6px;
     background: transparent; color: ${C.navy};
-    padding: 10px 18px; border-radius: 10px;
+    padding: 10px 18px; border-radius: 8px;
     font-family: ${font.body}; font-weight: 500; font-size: 14px;
     border: none; cursor: pointer; text-decoration: none;
     transition: color 0.2s, background 0.2s;
@@ -98,7 +98,7 @@ const GLOBAL_CSS = `
   .card-feature {
     background: ${C.white};
     border: 1px solid ${C.border};
-    border-radius: 20px;
+    border-radius: 9px;
     padding: 32px 28px;
     transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
   }
@@ -111,7 +111,7 @@ const GLOBAL_CSS = `
   .landing-body {
     flex: 1;
     overflow-x: hidden;
-    background: #F0F4F9;
+    background: ${C.sand};
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -261,117 +261,6 @@ function Icon({ name, size = 22, color = C.teal }) {
     ),
   };
   return icons[name] || null;
-}
-
-// ── Dashboard mockup ─────────────────────────────────────────────────
-function DashboardMockup() {
-  return (
-    <div className="anim-float" style={{
-      background: C.white,
-      borderRadius: 20,
-      boxShadow: "0 32px 80px rgba(13,43,62,0.18), 0 8px 24px rgba(43,191,170,0.12)",
-      overflow: "hidden",
-      border: `1px solid ${C.border}`,
-      maxWidth: 480,
-      width: "100%",
-    }}>
-      {/* Top bar */}
-      <div style={{ background: C.navy, padding: "12px 20px", display: "flex", alignItems: "center", gap: 8 }}>
-        {["#FF5F57","#FFBD2E","#28CA41"].map(c => (
-          <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />
-        ))}
-        <div style={{ flex: 1, textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 11, fontFamily: font.body }}>
-          orthodesk.vercel.app
-        </div>
-      </div>
-
-      {/* Nav */}
-      <div style={{ background: C.navyMid, padding: "10px 20px", display: "flex", gap: 20 }}>
-        {["Agenda","Patients","Bilans","Facturation"].map((t, i) => (
-          <span key={t} style={{
-            color: i === 2 ? C.teal : "rgba(255,255,255,0.55)",
-            fontSize: 12, fontFamily: font.body, fontWeight: i === 2 ? 600 : 400,
-            borderBottom: i === 2 ? `2px solid ${C.teal}` : "none",
-            paddingBottom: 4, cursor: "pointer",
-          }}>{t}</span>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div style={{ padding: 24 }}>
-        {/* Bilan header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 700, fontFamily: font.display, color: C.navy }}>
-              Bilan — Dyslexie
-            </div>
-            <div style={{ fontSize: 12, color: C.muted, fontFamily: font.body, marginTop: 2 }}>
-              Yassine M. · 8 ans
-            </div>
-          </div>
-          <div style={{
-            background: C.tealLight, color: C.tealDark,
-            borderRadius: 20, padding: "4px 12px",
-            fontSize: 11, fontWeight: 600, fontFamily: font.body
-          }}>En cours</div>
-        </div>
-
-        {/* Progress bar */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ fontSize: 11, color: C.muted, fontFamily: font.body }}>Progression</span>
-            <span style={{ fontSize: 11, fontWeight: 600, color: C.teal, fontFamily: font.body }}>4/6 sections</span>
-          </div>
-          <div style={{ height: 6, background: C.border, borderRadius: 10, overflow: "hidden" }}>
-            <div style={{ width: "66%", height: "100%", background: `linear-gradient(90deg, ${C.teal}, ${C.tealDark})`, borderRadius: 10 }} />
-          </div>
-          <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
-            {[1,2,3,4,5,6].map(i => (
-              <div key={i} style={{
-                width: 28, height: 28, borderRadius: "50%",
-                background: i <= 4 ? C.teal : C.border,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 10, color: i <= 4 ? C.white : C.muted, fontWeight: 600,
-                fontFamily: font.body,
-              }}>{i}</div>
-            ))}
-          </div>
-        </div>
-
-        {/* Section active */}
-        <div style={{ background: C.sand, borderRadius: 14, padding: 16, marginBottom: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.navy, fontFamily: font.body, marginBottom: 12 }}>
-            Lecture — Vitesse & Précision
-          </div>
-          {[
-            { label: "Lecture de mots", val: "85 mots/min", ok: true },
-            { label: "Erreurs phonologiques", val: "12%", ok: false },
-            { label: "Compréhension écrite", val: "Correcte", ok: true },
-          ].map(r => (
-            <div key={r.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontSize: 11, color: C.muted, fontFamily: font.body }}>{r.label}</span>
-              <span style={{
-                fontSize: 11, fontWeight: 600, fontFamily: font.body,
-                color: r.ok ? C.tealDark : C.accent,
-              }}>{r.val}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Export button */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          background: C.navy, borderRadius: 10, padding: "10px 0",
-          cursor: "pointer",
-        }}>
-          <Icon name="pdf" size={14} color={C.teal} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: C.white, fontFamily: font.body }}>
-            Exporter le bilan PDF
-          </span>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // ── Stats bar ────────────────────────────────────────────────────────
@@ -526,7 +415,7 @@ export default function Landing() {
           <div className="logoMark">
             <img src="/favicon.svg" alt="Logo OrthoDesk" width="20" height="20" />
           </div>
-          <span className="logoText">Ortho<span style={{color:'#C9A84C'}}>Desk</span></span>
+          <span className="logoText">Ortho<span style={{color:C.accent}}>Desk</span></span>
         </div>
 
         <button className={`hamburgerBtn ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Ouvrir le menu">
@@ -541,7 +430,7 @@ export default function Landing() {
 
         <div className={`navRight ${menuOpen ? 'mobileOpen' : ''}`}>
           <button className="logoutBtn" onClick={() => { setMenuOpen(false); navigate("/login") }}>Connexion</button>
-          <a href={WA_LINK} target="_blank" rel="noreferrer" className="logoutBtn" style={{ background: '#C9A84C', color: '#0C447C' }} onClick={() => setMenuOpen(false)}>
+          <a href={WA_LINK} target="_blank" rel="noreferrer" className="logoutBtn" style={{ background: C.accent, color: C.white }} onClick={() => setMenuOpen(false)}>
             Essai gratuit
           </a>
         </div>
@@ -550,7 +439,7 @@ export default function Landing() {
       {/* CONTENU */}
       <div className="landing-body">
       <section className="hero-section" style={{
-        background: `linear-gradient(160deg, #F0F4F9 0%, #FAFBFC 55%, #F5F7FA 100%)`,
+        background: `linear-gradient(160deg, ${C.sand} 0%, #FAFBFC 55%, #F5F7FA 100%)`,
         position: "relative",
         overflow: "hidden",
       }}>
@@ -558,13 +447,13 @@ export default function Landing() {
         <div style={{
           position: "absolute", top: -80, right: -80,
           width: 500, height: 500, borderRadius: "50%",
-          background: `radial-gradient(circle, rgba(12,68,124,0.08) 0%, transparent 70%)`,
+          background: `radial-gradient(circle, rgba(52,58,64,0.08) 0%, transparent 70%)`,
           pointerEvents: "none",
         }} />
         <div style={{
           position: "absolute", bottom: -100, left: "30%",
           width: 300, height: 300, borderRadius: "50%",
-          background: `radial-gradient(circle, rgba(12,68,124,0.05) 0%, transparent 70%)`,
+          background: `radial-gradient(circle, rgba(52,58,64,0.05) 0%, transparent 70%)`,
           pointerEvents: "none",
         }} />
 
@@ -577,7 +466,7 @@ export default function Landing() {
             <div className="anim-fade-up" style={{ animationDelay: "0s" }}>
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
-                background: "rgba(12,68,124,0.10)", border: "1px solid rgba(12,68,124,0.2)",
+                background: "rgba(52,58,64,0.10)", border: "1px solid rgba(52,58,64,0.2)",
                 borderRadius: 100, padding: "6px 14px", marginBottom: 24,
               }}>
                 <div style={{
@@ -585,7 +474,7 @@ export default function Landing() {
                   background: C.accent, animation: "pulse-dot 2s ease-in-out infinite"
                 }} />
                 <span style={{ fontSize: 12, color: C.navy, fontWeight: 600, fontFamily: font.body }}>
-                  Beta gratuite — Maroc 2025
+                  OrthoDesk — Maroc 2026
                 </span>
               </div>
             </div>
@@ -621,16 +510,16 @@ export default function Landing() {
               animationDelay: "0.3s",
               display: "flex", gap: 14, flexWrap: "wrap",
             }}>
-              <a href={WA_LINK} target="_blank" rel="noreferrer" className="btn-primary" style={{ fontSize: 15 }}>
+              <a href={WA_LINK} target="_blank" rel="noreferrer" className="btn-primary" style={{ fontSize: 15, background:C.teal, color:C.white, boxShadow:'0 4px 18px rgba(123,163,157,0.24)' }}>
                 <Icon name="whatsapp" size={18} color={C.white} />
                 Démarrer gratuitement
               </a>
               <button className="btn-outline" onClick={() => navigate("/login")} style={{
-                borderColor: C.navy, color: C.navy,
+                borderColor: C.teal, color: C.teal,
                 fontSize: 15,
               }}>
                 Se connecter
-                <Icon name="arrow" size={16} color={C.navy} />
+                <Icon name="arrow" size={16} color={C.teal} />
               </button>
             </div>
 
@@ -650,9 +539,21 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Right — mockup */}
+          {/* Right — image */}
           <div className="anim-fade-up" style={{ animationDelay: "0.25s", display: "flex", justifyContent: "center" }}>
-            <DashboardMockup />
+            <img
+              src="/Orthodesk_land.png"
+              alt="Aperçu de l'application OrthoDesk"
+              className="anim-float"
+              style={{
+                width: "100%",
+                maxWidth: 520,
+                height: "auto",
+                borderRadius: 20,
+                boxShadow: "0 32px 80px rgba(13,43,62,0.18), 0 8px 24px rgba(123,163,157,0.12)",
+                border: `1px solid ${C.border}`,
+              }}
+            />
           </div>
         </div>
       </section>
@@ -779,7 +680,6 @@ export default function Landing() {
 
           {/* Right side — visual */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Mini bilan card */}
             {[
               { pathologie: "Dyslexie / Dysorthographie", sections: 6, statut: "Finalisé", color: C.teal },
               { pathologie: "TSA verbal", sections: 5, statut: "Brouillon", color: C.accent },
@@ -896,28 +796,27 @@ export default function Landing() {
             fontSize: 16, color: "rgba(255,255,255,0.65)",
             fontFamily: font.body, marginBottom: 40, lineHeight: 1.6,
           }}>
-            Rejoignez les orthophonistes au Maroc qui utilisent OrthoDesk.<br />
-            Beta gratuite — aucune carte bancaire requise.
+            Rejoignez les orthophonistes au Maroc qui utilisent OrthoDesk.
           </p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href={WA_LINK} target="_blank" rel="noreferrer" className="btn-primary" style={{ 
-  fontSize: 16, 
-  padding: "16px 32px",
-  background: "#C9A84C",        // ← orange du logo
-  color: "#0C447C",              // ← texte bleu marine
-  boxShadow: "0 4px 18px rgba(201,168,76,0.35)",
-}}>
-  <Icon name="whatsapp" size={20} color="#0C447C" />
-  Démarrer gratuitement
-</a>
+            <a href={WA_LINK} target="_blank" rel="noreferrer" className="btn-primary" style={{
+              fontSize: 16,
+              padding: "16px 32px",
+              background: C.teal,
+              color: C.white,
+              boxShadow: "0 4px 18px rgba(123,163,157,0.24)",
+            }}>
+              <Icon name="whatsapp" size={20} color={C.white} />
+              Démarrer gratuitement
+            </a>
             <button className="btn-outline" onClick={() => navigate("/login")} style={{
-  borderColor: "#C9A84C",        // ← bordure orange
-  color: "#C9A84C",              // ← texte orange
-  fontSize: 16, 
-  padding: "15px 30px"
-}}>
-  Se connecter
-</button>
+              borderColor: C.teal,
+              color: C.teal,
+              fontSize: 16,
+              padding: "15px 30px"
+            }}>
+              Se connecter
+            </button>
           </div>
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", fontFamily: font.body, marginTop: 20 }}>
             Sans engagement · Données sécurisées · Support WhatsApp inclus

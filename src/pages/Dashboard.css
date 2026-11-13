@@ -16,8 +16,8 @@ html, body {
   min-height: 100vh;     /* ← min-height au lieu de height pour le scroll */
   display: flex;
   flex-direction: column;
-  background: #F5F8FC;
-  color: #1A2744;
+  background: var(--page-bg);
+  color: var(--text-primary);
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
 }
 
@@ -49,8 +49,8 @@ html, body {
 .logoMark {
   width: 34px;
   height: 34px;
-  background: #F4EBD3;
-  border-radius: 11px;
+  background: var(--brand-soft);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,7 +61,7 @@ html, body {
   font-size: 19px;
   font-weight: 700;
   letter-spacing: -0.5px;
-  color: #0C447C;
+  color: var(--brand);
 }
 
 .navTabs {
@@ -95,13 +95,13 @@ html, body {
 }
 
 .navTab:hover {
-  color: #0C447C;
-  background: #F3F7FB;
+  color: var(--brand);
+  background: var(--brand-soft);
 }
 
 .navTabActive {
-  color: #0C447C;
-  background: #EBF2F9;
+  color: var(--brand-strong);
+  background: var(--brand-soft);
 }
 
 .navRight {
@@ -115,7 +115,7 @@ html, body {
   display: none;
   background: none;
   border: none;
-  color: #0C447C;
+  color: var(--brand);
   font-size: 24px;
   cursor: pointer;
   padding: 8px;
@@ -142,7 +142,7 @@ html, body {
 }
 
 .logoutBtn:hover {
-  background: #F5F8FC;
+  background: var(--page-bg);
   border-color: #C7D5E3;
 }
 
@@ -153,7 +153,7 @@ html, body {
   display: flex;
   width: 100%;
   min-height: 0;
-  background: #F5F8FC;
+  background: var(--page-bg);
 }
 
 .body > div {
@@ -169,7 +169,7 @@ html, body {
 .body input:focus,
 .body select:focus,
 .body textarea:focus {
-  border-color: #87A9CA !important;
+  border-color: #B6CCC5 !important;
 }
 
 .body table {

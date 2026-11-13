@@ -37,7 +37,7 @@ function fmtDate(d) {
   if (!d) return ''
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
-const COLORS = ['#185FA5','#1D9E75','#E89020','#7B5EA7','#C0392B','#0C447C','#D4884A']
+const COLORS = ['#7BA39D','#1D7A5A','#E89020','#7B5EA7','#C0392B','#5B6268','#D4884A']
 function patColor(id) { return COLORS[(id || 0) % COLORS.length] }
 function initials(nom) {
   const p = (nom || '').split(' ')
@@ -50,7 +50,7 @@ const STATUT_COLORS = {
 }
 
 const AVANCEMENT_BADGE = {
-  en_cours:  { bg: '#EBF2F9', color: '#185FA5', label: '🔵 En cours' },
+  en_cours:  { bg: '#EEF1F3', color: '#5B6268', label: '🔵 En cours' },
   suspendu:  { bg: '#FFF3CD', color: '#8B5A00', label: '⏸ Suspendu' },
   termine:   { bg: '#E8F5EE', color: '#1D7A5A', label: '✅ Terminé' },
 }
@@ -107,9 +107,9 @@ function ChampField({ champ, value, onChange }) {
             style={{
               padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
               cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', border: '1.5px solid',
-              borderColor: checked ? '#0C447C' : '#DDE5EF',
-              background:  checked ? '#EBF2F9' : '#F0F4F9',
-              color:       checked ? '#0C447C' : '#8A9BB0',
+              borderColor: checked ? '#7BA39D' : '#DDE5EF',
+              background:  checked ? '#EEF1F3' : '#F0F4F9',
+              color:       checked ? '#7BA39D' : '#8A9BB0',
             }}>
             {opt}
           </button>
@@ -134,7 +134,7 @@ function GrilleOuiNon({ champs, donnees, onChange }) {
             borderRadius: i === 0 ? '8px 8px 0 0' : i === champs.length - 1 ? '0 0 8px 8px' : 0,
             borderBottom: i < champs.length - 1 ? '1px solid #EEF2F7' : 'none',
           }}>
-            <span style={{ fontSize: 13, color: '#1A2744' }}>{c.label}</span>
+            <span style={{ fontSize: 13, color: '#343A40' }}>{c.label}</span>
             <div style={{ display: 'flex', gap: 5 }}>
               {['Oui', 'Non'].map(opt => (
                 <button key={opt} onClick={() => onChange(c.id, opt)}
@@ -176,7 +176,7 @@ function TableauPhonemes({ champs, donnees, onChange, deuxColonnes = false }) {
             const row = donnees[c.id] || {}
             return (
               <tr key={c.id} style={{ background: i % 2 === 0 ? '#F8FAFC' : '#fff' }}>
-                <td style={{ ...S.td, fontWeight: 700, color: '#0C447C', width: 60 }}>{c.label}</td>
+                <td style={{ ...S.td, fontWeight: 700, color: '#7BA39D', width: 60 }}>{c.label}</td>
                 {deuxColonnes
                   ? ['avec', 'sans'].map(k => (
                     <td key={k} style={{ ...S.td, textAlign: 'center' }}>
@@ -328,14 +328,14 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
         {confirmSuspend && (
           <div style={{
             position: 'absolute', inset: 0, background: 'rgba(10,30,60,0.6)',
-            zIndex: 10, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+            zIndex: 10, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
           }}>
-            <div style={{ background: '#fff', borderRadius: 12, padding: 24, maxWidth: 360, textAlign: 'center' }}>
+            <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 9, padding: 24, maxWidth: 360, textAlign: 'center' }}>
               <div style={{ fontSize: 32, marginBottom: 10 }}>⏸</div>
-              <div style={{ fontFamily: 'Georgia, serif', fontSize: 17, color: '#0C447C', marginBottom: 8 }}>
+              <div style={{ fontSize: 17, fontWeight: 700, color: '#7BA39D', marginBottom: 8 }}>
                 Arrêter la séance {seanceNum} ?
               </div>
-              <div style={{ fontSize: 13, color: '#4A6080', lineHeight: 1.6, marginBottom: 18 }}>
+              <div style={{ fontSize: 13, color: '#5B6268', lineHeight: 1.6, marginBottom: 18 }}>
                 Les données saisies seront sauvegardées. Vous pourrez reprendre la séance {seanceNum + 1} lors du prochain rendez-vous.
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
@@ -391,7 +391,7 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
         {/* Barre de progression */}
         {template && (
           <div style={{ height: 3, background: '#DDE5EF', flexShrink: 0 }}>
-            <div style={{ height: '100%', background: '#0C447C', width: `${progress}%`, transition: 'width .3s ease' }} />
+            <div style={{ height: '100%', background: '#7BA39D', width: `${progress}%`, transition: 'width .3s ease' }} />
           </div>
         )}
 
@@ -526,8 +526,8 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
               {/* Boutons finaliser */}
               <div style={{ display: 'flex', gap: 8 }}>
                 <button style={{
-                  ...S.saveBtn, background: '#F0F4F9', color: '#0C447C',
-                  border: '1.5px solid #0C447C', flex: 1
+                  ...S.saveBtn, background: '#EDF4F1', color: '#7BA39D',
+                  border: '1px solid #B7E8ED', flex: 1
                 }}
                   onClick={() => handleSave('brouillon')} disabled={saving}>
                   💾 Enregistrer brouillon
@@ -569,7 +569,7 @@ function BilanForm({ templates, patients, bilan, session, onSave, onClose }) {
                   <div key={i} onClick={() => setStep(i)}
                     style={{
                       width: i === step ? 20 : 6, height: 6, borderRadius: 3,
-                      background: i === step ? '#0C447C' : i < step ? '#3B82C4' : '#DDE5EF',
+                      background: i === step ? '#7BA39D' : i < step ? '#B6CCC5' : '#DDE5EF',
                       cursor: 'pointer', transition: 'all .2s',
                     }} />
                 ))}
@@ -708,14 +708,14 @@ export default function Bilans({ session }) {
     let y = 36
 
     // Couleurs
-    const BLEU    = [12, 68, 124]
+    const BLEU    = [23, 106, 103]
     const GRIS    = [138, 155, 176]
     const NOIR    = [26, 39, 68]
     const VERT    = [29, 122, 90]
     const ROUGE   = [192, 57, 43]
     const BGGRIS  = [240, 244, 249]
 
-    const headerFill = hexToRgb(profil?.couleur_principale || '#0C447C', BLEU)
+    const headerFill = hexToRgb(profil?.couleur_principale || '#7BA39D', BLEU)
     const headerText = hexToRgb(profil?.couleur_texte || '#FFFFFF', [255, 255, 255])
     const logoData   = profil?.logo_url ? await loadImageDataUrl(profil.logo_url) : null
     const logoSize   = 24
@@ -1129,7 +1129,7 @@ export default function Bilans({ session }) {
         {!selected ? (
           <div style={S.emptyDetail}>
             <div style={{ fontSize: 48, opacity: .25 }}>📋</div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: '#4A6080' }}>Sélectionnez un bilan</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: '#5B6268' }}>Sélectionnez un bilan</div>
             <div style={{ fontSize: 12, color: '#8A9BB0' }}>pour voir le contenu</div>
             {!isMobile && (
               <button style={{ ...S.addBtn, marginTop: 16 }} onClick={() => { setEditBilan(null); setModal(true) }}>
@@ -1169,7 +1169,7 @@ export default function Bilans({ session }) {
                     </span>
                   )}
                   {selected.bilan_templates?.pathologie && (
-                    <span style={{ ...S.pdTag, background: '#EBF2F9', color: '#185FA5' }}>
+                    <span style={{ ...S.pdTag, background: '#EEF1F3', color: '#5B6268' }}>
                       {selected.bilan_templates.pathologie}
                     </span>
                   )}
@@ -1202,7 +1202,7 @@ export default function Bilans({ session }) {
                   </button>
                   <button style={{
                     ...S.editBtn,
-                    background: '#0C447C', color: '#fff',
+                    background: '#7BA39D', color: '#fff',
                     border: 'none', fontWeight: 700,
                   }}
                     onClick={() => exportPDF(selected)}>
@@ -1229,7 +1229,7 @@ export default function Bilans({ session }) {
                     }}>
                       <span style={{ fontSize: 18 }}>✅</span>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2744' }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#343A40' }}>
                           Séance {s.seance}
                         </div>
                         <div style={{ fontSize: 11, color: '#8A9BB0' }}>
@@ -1277,7 +1277,7 @@ export default function Bilans({ session }) {
                         if (!v) return null
                         return (
                           <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: '1px solid #F0F4F9' }}>
-                            <span style={{ color: '#4A6080' }}>{c.label}</span>
+                            <span style={{ color: '#5B6268' }}>{c.label}</span>
                             <span style={{
                               fontWeight: 700,
                               color: v === 'Oui' ? '#1D7A5A' : '#C0392B'
@@ -1299,7 +1299,7 @@ export default function Bilans({ session }) {
                         return (
                           <span key={c.id} style={{
                             fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6,
-                            background: '#F0F4F9', color: '#0C447C',
+                            background: '#EDF4F1', color: '#7BA39D',
                           }}>
                             {c.label} {display}
                           </span>
@@ -1326,7 +1326,7 @@ export default function Bilans({ session }) {
             {selected.conclusion && (
               <div style={S.pdCard}>
                 <div style={S.pdCardTitle}>Conclusion</div>
-                <div style={{ fontSize: 13, color: '#1A2744', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+                <div style={{ fontSize: 13, color: '#343A40', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
                   {selected.conclusion}
                 </div>
               </div>
@@ -1366,62 +1366,62 @@ export default function Bilans({ session }) {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
-  wrap:         { flex: 1, display: 'flex', overflow: 'hidden', fontFamily: 'DM Sans, sans-serif' },
-  listPanel:    { width: 320, minWidth: 280, borderRight: '1px solid #DDE5EF', background: '#fff', display: 'flex', flexDirection: 'column', flexShrink: 0 },
+  wrap:         { flex: 1, display: 'flex', overflow: 'hidden', fontFamily: 'DM Sans, sans-serif', background: 'var(--page-bg)' },
+  listPanel:    { width: 320, minWidth: 280, borderRight: '1px solid var(--line)', background: 'var(--surface)', display: 'flex', flexDirection: 'column', flexShrink: 0 },
   statsBar:     { display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid #DDE5EF', gap: 4 },
   statItem:     { flex: 1, textAlign: 'center' },
-  statVal:      { fontSize: 12, fontWeight: 700, color: '#0C447C' },
+  statVal:      { fontSize: 12, fontWeight: 700, color: '#7BA39D' },
   statLbl:      { fontSize: 10, color: '#8A9BB0', marginTop: 1 },
   statDiv:      { width: 1, height: 26, background: '#DDE5EF' },
   listHeader:   { padding: '12px 14px 8px', borderBottom: '1px solid #DDE5EF' },
   search:       { width: '100%', padding: '8px 12px', border: '1.5px solid #DDE5EF', borderRadius: 8, fontSize: 13, fontFamily: 'DM Sans, sans-serif', outline: 'none', boxSizing: 'border-box' },
   filters:      { display: 'flex', gap: 4, marginTop: 7, flexWrap: 'wrap' },
   filterBtn:    { padding: '3px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, border: '1.5px solid #DDE5EF', background: 'none', cursor: 'pointer', color: '#8A9BB0', fontFamily: 'DM Sans, sans-serif' },
-  filterActive: { borderColor: '#0C447C', background: '#0C447C', color: '#fff' },
+  filterActive: { borderColor: '#7BA39D', background: '#7BA39D', color: '#fff' },
   listCount:    { fontSize: 11, color: '#8A9BB0', padding: '5px 14px', fontStyle: 'italic' },
   list:         { flex: 1, overflowY: 'auto', padding: '6px 6px' },
   emptyMsg:     { padding: '24px', textAlign: 'center', color: '#8A9BB0', fontSize: 13 },
   bilanCard:    { display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderRadius: 10, cursor: 'pointer', border: '1.5px solid transparent', marginBottom: 4 },
-  bilanCardSel: { background: '#EBF2F9', borderColor: '#3B82C4' },
+  bilanCardSel: { background: '#EDF4F1', borderColor: '#B6CCC5' },
   patAv:        { width: 34, height: 34, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 },
-  bilanPatient: { fontSize: 13, fontWeight: 600, color: '#1A2744' },
+  bilanPatient: { fontSize: 13, fontWeight: 600, color: '#343A40' },
   bilanMeta:    { fontSize: 11, color: '#8A9BB0', marginTop: 1 },
   bilanDate:    { fontSize: 10, color: '#B0BBCC', marginTop: 1 },
   statBadge:    { fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, whiteSpace: 'nowrap' },
   addBtnWrap:   { padding: '10px 10px', borderTop: '1px solid #DDE5EF' },
-  addBtnFull:   { width: '100%', padding: '9px', background: '#0C447C', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
-  detail:       { flex: 1, overflowY: 'auto', background: '#F0F4F9', padding: 20 },
+  addBtnFull:   { width: '100%', padding: '9px', background: '#7BA39D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  detail:       { flex: 1, overflowY: 'auto', background: 'var(--page-bg)', padding: 20 },
   emptyDetail:  { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, color: '#8A9BB0' },
   detailInner:  { display: 'flex', flexDirection: 'column', gap: 14 },
-  pdHeader:     { background: '#fff', borderRadius: 12, padding: 20, display: 'flex', alignItems: 'flex-start', gap: 16, boxShadow: '0 2px 12px rgba(12,68,124,0.08)', flexWrap: 'wrap' },
-  pdName:       { fontFamily: 'Georgia, serif', fontSize: 22, color: '#0C447C' },
+  pdHeader:     { background: '#fff', border: '1px solid var(--line)', borderRadius: 9, padding: 20, display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' },
+  pdName:       { fontSize: 22, fontWeight: 750, color: '#343A40' },
   pdMeta:       { fontSize: 12, color: '#8A9BB0', marginTop: 3 },
   pdTags:       { display: 'flex', gap: 6, marginTop: 7, flexWrap: 'wrap' },
   pdTag:        { fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 },
-  editBtn:      { padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: '1.5px solid #DDE5EF', background: '#fff', color: '#0C447C', cursor: 'pointer' },
-  addBtn:       { padding: '8px 14px', background: '#0C447C', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
-  pdCard:       { background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 12px rgba(12,68,124,0.08)' },
+  editBtn:      { padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: '1px solid #D9E2EB', background: '#fff', color: '#555B60', cursor: 'pointer' },
+  addBtn:       { padding: '8px 14px', background: '#7BA39D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  pdCard:       { background: '#fff', border: '1px solid var(--line)', borderRadius: 9, padding: 16 },
   pdCardTitle:  { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A9BB0', marginBottom: 12 },
   pdField:      { marginBottom: 9 },
   pdFl:         { fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8A9BB0' },
-  pdFv:         { fontSize: 13, color: '#1A2744', fontWeight: 500, marginTop: 1 },
+  pdFv:         { fontSize: 13, color: '#343A40', fontWeight: 500, marginTop: 1 },
   overlay:      { position: 'fixed', inset: 0, background: 'rgba(10,30,60,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 },
-  modalBox:     { background: '#fff', borderRadius: 16, width: '100%', boxShadow: '0 8px 32px rgba(12,68,124,0.18)', display: 'flex', flexDirection: 'column', maxHeight: '92vh' },
+  modalBox:     { background: '#fff', border: '1px solid var(--line)', borderRadius: 9, width: '100%', boxShadow: '0 8px 28px rgba(52,58,64,0.12)', display: 'flex', flexDirection: 'column', maxHeight: '92vh' },
   modalHead:    { padding: '18px 22px 14px', borderBottom: '1px solid #DDE5EF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 },
-  modalTitle:   { fontFamily: 'Georgia, serif', fontSize: 19, color: '#0C447C' },
+  modalTitle:   { fontSize: 19, fontWeight: 700, color: '#343A40' },
   closeBtn:     { width: 28, height: 28, background: '#F0F4F9', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 14, color: '#8A9BB0' },
   modalBody:    { padding: '20px 22px', overflowY: 'auto', flex: 1 },
   modalFoot:    { padding: '12px 22px 16px', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid #DDE5EF', flexShrink: 0 },
   sectionLabel: { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A9BB0', marginBottom: 4 },
   fg:           { display: 'flex', flexDirection: 'column', gap: 4 },
-  fl:           { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#4A6080' },
+  fl:           { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#5B6268' },
   fi:           { padding: '8px 12px', border: '1.5px solid #DDE5EF', borderRadius: 8, fontSize: 13, fontFamily: 'DM Sans, sans-serif', outline: 'none', width: '100%', boxSizing: 'border-box' },
   fiSm:         { padding: '4px 8px', border: '1.5px solid #DDE5EF', borderRadius: 6, fontSize: 12, fontFamily: 'DM Sans, sans-serif', outline: 'none', width: '100%', boxSizing: 'border-box' },
   frow:         { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
   th:           { padding: '8px 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8A9BB0', textAlign: 'center' },
-  td:           { padding: '6px 10px', fontSize: 13, color: '#1A2744' },
+  td:           { padding: '6px 10px', fontSize: 13, color: '#343A40' },
   dangerBtn:    { padding: '8px 14px', background: '#FCEBEB', color: '#C0392B', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  cancelBtn:    { padding: '8px 14px', background: '#F0F4F9', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#4A6080', cursor: 'pointer' },
-  saveBtn:      { padding: '8px 18px', background: '#0C447C', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
-  backBtn:      { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: '#fff', border: '1.5px solid #DDE5EF', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#0C447C', cursor: 'pointer' },
+  cancelBtn:    { padding: '8px 14px', background: '#F0F4F9', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#5B6268', cursor: 'pointer' },
+  saveBtn:      { padding: '8px 18px', background: '#7BA39D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
+  backBtn:      { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: '#fff', border: '1px solid #D9E2EB', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#7BA39D', cursor: 'pointer' },
 }

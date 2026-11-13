@@ -4,27 +4,27 @@ import { supabase } from '../supabase'
 const MOTIFS = ['Aphasie post-AVC','Bégaiement','Retard de langage','Trisomie 21','Dyslexie / Dysorthographie','TSA (Autisme)','Dysphagie','Dysphonie','Autre']
 const STATUTS = { actif:'Actif', bilan:'En bilan', pause:'Pause', archive:'Archivé' }
 const STATUT_COLORS = {
-  actif:   { bg:'#E8F5EE', color:'#1D7A5A' },
-  bilan:   { bg:'#EBF2F9', color:'#185FA5' },
+  actif:   { bg:'#E8F5EE', color:'#7BA39D' },
+  bilan:   { bg:'#EEF1F3', color:'#5B6268' },
   pause:   { bg:'#FEF3E2', color:'#8B5A00' },
   archive: { bg:'#F1EFE8', color:'#888' },
 }
-const COLORS = ['#185FA5','#1D9E75','#C9A84C','#7B5EA7','#C0392B','#0C447C','#D4884A']
-const ORANGE = '#C9A84C'
+const COLORS = ['#7BA39D','#7BA39D','#A9BAAA','#7B5EA7','#C0392B','#5B6268','#D4884A']
+const ORANGE = '#A9BAAA'
 
 const HUMEURS = [
   { value:'très bien',     label:'😊 Très bien',      color:'#1D7A5A', bg:'#E8F5EE' },
-  { value:'bien',          label:'🙂 Bien',            color:'#185FA5', bg:'#EBF2F9' },
+  { value:'bien',          label:'🙂 Bien',            color:'#5B6268', bg:'#EEF1F3' },
   { value:'difficile',     label:'😐 Difficile',       color:'#8B5A00', bg:'#FEF3E2' },
   { value:'très difficile',label:'😔 Très difficile',  color:'#C0392B', bg:'#FCEBEB' },
 ]
 
 const TYPES_LABEL = { bilan:'Bilan initial', reeducation:'Rééducation', suivi:'Suivi', tele:'Téléconsultation' }
-const TYPES_COLOR = { bilan:'#185FA5', reeducation:'#1D9E75', suivi:'#C9A84C', tele:'#7B5EA7' }
+const TYPES_COLOR = { bilan:'#5B6268', reeducation:'#1D9E75', suivi:'#A9BAAA', tele:'#7B5EA7' }
 const FACTURE_TYPES = ['Bilan initial', 'Suivi', 'Téléconsultation', 'Autre']
 const SESSION_TARIFFS = [200, 250, 300]
 
-const PAGE_SIZE  = 5
+const PAGE_SIZE  = 10
 const EMPTY_NOTE = { observations:'', exercices:'', humeur:'', objectifs_prochaine:'', paye:false, date_seance:'', tarif: 200 }
 const EMPTY_FORM = {
   prenom:'', nom:'', dob:'', sexe:'', cin:'',
@@ -100,6 +100,7 @@ export default function Patients({ session }) {
   const [search, setSearch]         = useState('')
   const [filter, setFilter]         = useState('tous')
   const [selectedId, setSelectedId] = useState(null)
+  const [hoveredPatientId, setHoveredPatientId] = useState(null)
   const [modal, setModal]           = useState(false)
   const [editPat, setEditPat]       = useState(null)
   const [form, setForm]             = useState(EMPTY_FORM)
@@ -564,7 +565,7 @@ export default function Patients({ session }) {
     const ligneAdresse=[profil?.adresse,[profil?.code_postal,profil?.ville].filter(Boolean).join(' '),profil?.pays&&profil.pays!=='Maroc'?profil.pays:''].filter(Boolean).join(' — ')
     const doc=new jsPDF({unit:'mm',format:'a4'})
     const W=210,ML=14,MR=14,BLEU=[12,68,124],GRIS=[138,155,176],NOIR=[26,39,68]
-    const headerFill=hexToRgb(profil?.couleur_principale||'#0C447C',BLEU)
+    const headerFill=hexToRgb(profil?.couleur_principale||'#7BA39D',BLEU)
     const headerText=hexToRgb(profil?.couleur_texte||'#FFFFFF',[255,255,255])
     const logoData=profil?.logo_url?await loadImageDataUrl(profil.logo_url):null
     const logoSize=24
@@ -620,7 +621,7 @@ export default function Patients({ session }) {
     setForm({prenom:p.prenom||'',nom:p.nom||'',dob:p.dob||'',sexe:p.sexe||'',cin:p.cin||'',tel:p.tel||'',email:p.email||'',adresse:p.adresse||'',motif:parsed.selected, motif_autre:parsed.custom, statut:p.statut||'actif',medecin:p.medecin||'',mutuelle:p.mutuelle||'',notes:p.notes||'',urgnom:p.urgnom||'',urgtel:p.urgtel||''})
     setModal(true)
   }
-  function selectPatient(id){setSelectedId(id);setActiveTab('infos');if(isMobile)setShowDetail(true)}
+  function selectPatient(id){setSelectedId(id);setActiveTab('infos');setShowDetail(true)}
 
   // Filtrage & pagination
   let filtered=patients
@@ -628,6 +629,12 @@ export default function Patients({ session }) {
   if(filter!=='tous')filtered=filtered.filter(p=>p.statut===filter)
   const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE))
   const paginated=filtered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE)
+  const statusCounts = {
+    total: patients.length,
+    actif: patients.filter(patient => patient.statut === 'actif').length,
+    bilan: patients.filter(patient => patient.statut === 'bilan').length,
+    archive: patients.filter(patient => patient.statut === 'archive').length,
+  }
 
   const selected   = patients.find(p=>p.id===selectedId)
   const patRdvs    = selected ? rdvs.filter(r=>r.patient_nom===selected.prenom+' '+selected.nom) : []
@@ -645,21 +652,25 @@ export default function Patients({ session }) {
 
   // ─── PANNEAU LISTE ──────────────────────────────────────────────────────────
   const listPanel = (
-    <div style={{...S.listPanel, width:isMobile?'100%':320}}>
+    <div style={S.registryPanel}>
       <div style={S.listHeader}>
-        <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:8,flexWrap:'wrap'}}>
-          <input style={{...S.search,marginBottom:0,minWidth:180}} type="text" placeholder="Rechercher…"
-            value={search} onChange={e=>setSearch(e.target.value)}/>
-          <button style={{...S.addBtn,whiteSpace:'nowrap',flexShrink:0}} onClick={exportPatientsPDF}>⬇ PDF</button>
-          <button style={{...S.addBtn,whiteSpace:'nowrap',flexShrink:0}} onClick={exportPatientsCSV}>⬇ CSV</button>
-          {isMobile&&<button style={{...S.addBtn,whiteSpace:'nowrap',flexShrink:0}} onClick={openNew}>+ Nouveau</button>}
+        <div style={S.registryToolbar}>
+          <div style={S.searchWrap}>
+            <span aria-hidden="true" style={S.searchIcon}>⌕</span>
+            <input style={S.search} type="search" placeholder="Rechercher un patient…"
+              value={search} onChange={e=>setSearch(e.target.value)}/>
+          </div>
+          <div style={S.filters}>
+            {['tous','actif','bilan','pause','archive'].map(f=>(
+              <button key={f} style={{...S.filterBtn,...(filter===f?S.filterActive:{})}} onClick={()=>setFilter(f)}>
+                {f==='tous'?'Tous':STATUTS[f]}
+              </button>
+            ))}
+          </div>
         </div>
-        <div style={S.filters}>
-          {['tous','actif','bilan','pause','archive'].map(f=>(
-            <button key={f} style={{...S.filterBtn,...(filter===f?S.filterActive:{})}} onClick={()=>setFilter(f)}>
-              {f==='tous'?'Tous':STATUTS[f]}
-            </button>
-          ))}
+          <div style={{...S.tableHeader,display:isMobile?'none':'grid'}}>
+          <span>Dossier patient</span>
+          {!isMobile&&<><span>Âge / Médecin</span><span>Motif de consultation</span><span>Parcours</span></>}
         </div>
       </div>
 
@@ -675,14 +686,32 @@ export default function Patients({ session }) {
           const rdvCount=rdvs.filter(r=>r.patient_nom===p.prenom+' '+p.nom).length
           const bilanCount=bilans.filter(b=>b.patient_id===p.id).length
           return(
-            <div key={p.id} style={{...S.patCard,...(selectedId===p.id?S.patCardSel:{})}} onClick={()=>selectPatient(p.id)}>
-              <div style={{...S.patAv,background:col+'22',color:col}}>{initials(p.prenom,p.nom)}</div>
-              <div style={S.patInfo}>
-                <div style={S.patName}>{p.prenom} {p.nom}</div>
-                <div style={S.patMeta}>{age?age+' ans · ':''}{formatMotifs(p.motif)||'—'}</div>
-                <div style={S.patMeta}>{rdvCount} séance{rdvCount>1?'s':''} · {bilanCount} bilan{bilanCount>1?'s':''}</div>
+            <div key={p.id} role="button" tabIndex={0} aria-pressed={selectedId===p.id}
+              onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPatient(p.id)}}}
+              onMouseEnter={()=>setHoveredPatientId(p.id)} onMouseLeave={()=>setHoveredPatientId(null)}
+              onFocus={()=>setHoveredPatientId(p.id)} onBlur={()=>setHoveredPatientId(null)}
+              style={{...S.patientRow,gridTemplateColumns:isMobile?'minmax(0,1fr) auto':'minmax(220px,1.7fr) minmax(130px,1fr) minmax(170px,1.4fr) minmax(145px,1fr)',...(selectedId===p.id||hoveredPatientId===p.id?S.patientRowSelected:{})}} onClick={()=>selectPatient(p.id)}>
+              <div style={S.patientIdentity}>
+                <div style={{...S.patAv,background:col+'22',color:col}}>{initials(p.prenom,p.nom)}</div>
+                <div style={S.patInfo}>
+                  <div style={S.patName}>{p.prenom} {p.nom}</div>
+                  <div style={S.patMeta}>{p.tel||p.email||'Coordonnées non renseignées'}</div>
+                  {isMobile&&<div style={S.patMeta}>{age?`${age} ans · `:''}{formatMotifs(p.motif)||'Motif non renseigné'}</div>}
+                </div>
               </div>
-              <span style={{...S.statBadge,background:sc.bg,color:sc.color}}>{STATUTS[p.statut]}</span>
+              {!isMobile&&<div style={S.patientData}>
+                <span>{age?`${age} ans`:'—'}</span>
+                <small>{p.medecin||'Médecin non renseigné'}</small>
+              </div>}
+              {!isMobile&&<div style={S.patientData}>
+                <span>{formatMotifs(p.motif)||'Motif non renseigné'}</span>
+                <small>{p.tel||p.email||'Coordonnées non renseignées'}</small>
+              </div>}
+              {!isMobile&&<div style={S.patientJourney}>
+                <span style={{...S.statBadge,background:sc.bg,color:sc.color}}>{STATUTS[p.statut]||'Non défini'}</span>
+                <small>{rdvCount} séance{rdvCount!==1?'s':''} · {bilanCount} bilan{bilanCount!==1?'s':''}</small>
+              </div>}
+              {isMobile&&<span style={{...S.statBadge,background:sc.bg,color:sc.color}}>{STATUTS[p.statut]||'Non défini'}</span>}
             </div>
           )
         })}
@@ -703,6 +732,7 @@ export default function Patients({ session }) {
   // ─── ONGLET INFOS ───────────────────────────────────────────────────────────
   const tabInfos = selected && (
     <>
+      {activeTab==='infos' && <>
       <div style={{...S.pdGrid,gridTemplateColumns:isMobile?'1fr':'1fr 1fr'}}>
         <div style={S.pdCard}>
           <div style={S.pdCardTitle}>Contact</div>
@@ -729,6 +759,9 @@ export default function Patients({ session }) {
         </div>
       </div>
 
+      </>}
+
+      {activeTab==='paiements' && <>
       <div style={{...S.pdCard, marginTop:14}}>
         <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:10, marginBottom:12, flexWrap:'wrap'}}>
           <div style={S.pdCardTitle}>Paiements</div>
@@ -760,21 +793,21 @@ export default function Patients({ session }) {
         </div>
 
         <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:12, gap:10, flexWrap:'wrap'}}>
-          <div style={{fontSize:12, color:'#4A6080', fontWeight:700}}>Statut : <span style={{color: resteAPayer <= 0 ? '#1D9E75' : '#8B5A00'}}>{paymentStatus}</span></div>
-          <div style={{fontSize:12, color:'#4A6080', fontWeight:700}}>Payé : <strong>{formatMoney(totalPaye)}</strong></div>
+          <div style={{fontSize:12, color:'#5B6268', fontWeight:700}}>Statut : <span style={{color: resteAPayer <= 0 ? '#1D9E75' : '#8B5A00'}}>{paymentStatus}</span></div>
+          <div style={{fontSize:12, color:'#5B6268', fontWeight:700}}>Payé : <strong>{formatMoney(totalPaye)}</strong></div>
         </div>
 
         {noteDetails.length > 0 && (
           <div style={{marginTop:14, border:'1px solid #DDE5EF', borderRadius:10, background:'#fff', overflow:'hidden'}}>
-            <div style={{padding:'10px 12px', borderBottom:'1px solid #DDE5EF', fontSize:12, fontWeight:700, color:'#0C447C'}}>Détail des séances</div>
+            <div style={{padding:'10px 12px', borderBottom:'1px solid #DDE5EF', fontSize:12, fontWeight:700, color:'#7BA39D'}}>Détail des séances</div>
             <div style={{display:'flex', flexDirection:'column'}}>
               {noteDetails.map(note => (
                 <div key={note.id || `${note.date_seance}-${note.tarif}`} style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, padding:'8px 12px', borderBottom:'1px solid #EEF3F8'}}>
                   <div>
-                    <div style={{fontSize:12, fontWeight:700, color:'#1A2744'}}>{formatDateFr(note.date_seance) || 'Date non renseignée'}</div>
+                    <div style={{fontSize:12, fontWeight:700, color:'#343A40'}}>{formatDateFr(note.date_seance) || 'Date non renseignée'}</div>
                     <div style={{fontSize:11, color:'#8A9BB0'}}>{note.observations || 'Aucune observation'}</div>
                   </div>
-                  <div style={{fontSize:12, fontWeight:700, color:'#0C447C'}}>{formatMoney(Number(note.tarif || 0))}</div>
+                  <div style={{fontSize:12, fontWeight:700, color:'#7BA39D'}}>{formatMoney(Number(note.tarif || 0))}</div>
                   <div style={{display:'flex',flexDirection:'column',gap:6,alignItems:'flex-end',flex:'0 0 auto'}}>
                     {payments
                       .filter(payment => String(payment.note_seance_id) === String(note.id))
@@ -813,14 +846,14 @@ export default function Patients({ session }) {
             {payments.map(payment => (
               <div key={payment.id} style={S.paymentItem}>
                 <div style={{flex:'1 1 180px',minWidth:0}}>
-                  <div style={{fontSize:12, fontWeight:700, color:'#0C447C'}}>{formatMoney(payment.montant)}</div>
+                  <div style={{fontSize:12, fontWeight:700, color:'#7BA39D'}}>{formatMoney(payment.montant)}</div>
                   <div style={{fontSize:11, color:'#8A9BB0'}}>{payment.mode_paiement || 'cash'} · {formatDateFr(payment.date_paiement)}</div>
                   {payment.note_seance_id && (
-                    <div style={{fontSize:11, color:'#4A6080', marginTop:3}}>
+                    <div style={{fontSize:11, color:'#5B6268', marginTop:3}}>
                       Séance du {formatDateFr(notes.find(note => String(note.id) === String(payment.note_seance_id))?.date_seance) || 'date indisponible'}
                     </div>
                   )}
-                  {payment.note && <div style={{fontSize:11, color:'#4A6080', marginTop:3, overflowWrap:'anywhere'}}>{payment.note}</div>}
+                  {payment.note && <div style={{fontSize:11, color:'#5B6268', marginTop:3, overflowWrap:'anywhere'}}>{payment.note}</div>}
                 </div>
                 <div style={{display:'flex', alignItems:'center', gap:8, flex:'0 0 auto', flexWrap:'wrap', justifyContent:'flex-end'}}>
                   <button
@@ -847,10 +880,12 @@ export default function Patients({ session }) {
           <div style={{marginTop:12, fontSize:12, color:'#8A9BB0', fontStyle:'italic'}}>Aucun paiement enregistré.</div>
         )}
       </div>
-      {selected.notes&&(
+      </>}
+
+      {activeTab==='infos' && selected.notes&&(
         <div style={{...S.pdCard,marginBottom:0}}>
           <div style={S.pdCardTitle}>Antécédents & Notes cliniques</div>
-          <div style={{fontSize:13,color:'#1A2744',lineHeight:1.7}}>{selected.notes}</div>
+          <div style={{fontSize:13,color:'#343A40',lineHeight:1.7}}>{selected.notes}</div>
         </div>
       )}
     </>
@@ -873,7 +908,7 @@ export default function Patients({ session }) {
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
           {patRdvs.map(rdv=>{
             const note = getNoteForRdv(rdv.id)
-            const typeColor = TYPES_COLOR[rdv.type]||'#185FA5'
+            const typeColor = TYPES_COLOR[rdv.type]||'#5B6268'
             const typeLabel = TYPES_LABEL[rdv.type]||rdv.type
             const humeurInfo = note ? HUMEURS.find(h=>h.value===note.humeur) : null
 
@@ -882,7 +917,7 @@ export default function Patients({ session }) {
                 {/* En-tête séance */}
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:note?10:0}}>
                   <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-                    <div style={{fontSize:13,fontWeight:700,color:'#0C447C'}}>{formatDateFr(rdv.date)}</div>
+                    <div style={{fontSize:13,fontWeight:700,color:'#7BA39D'}}>{formatDateFr(rdv.date)}</div>
                     <div style={{fontSize:11,fontWeight:700,color:typeColor,background:typeColor+'18',padding:'2px 9px',borderRadius:20}}>
                       {typeLabel}
                     </div>
@@ -965,16 +1000,16 @@ export default function Patients({ session }) {
   // ─── PANNEAU DÉTAIL ─────────────────────────────────────────────────────────
   const detailPanel = (
     <div style={S.detail}>
-      {isMobile&&showDetail&&(
+      {showDetail&&selected&&(
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14,gap:8}}>
-          <button style={{...S.backBtn,marginBottom:0}} onClick={()=>setShowDetail(false)}>← Retour</button>
+          <button style={{...S.backBtn,marginBottom:0}} onClick={()=>setShowDetail(false)}>← Retour aux patients</button>
           <button style={S.addBtn} onClick={openNew}>+ Nouveau patient</button>
         </div>
       )}
       {!selected?(
         <div style={S.emptyDetail}>
           <div style={{fontSize:48,opacity:.25}}>👤</div>
-          <div style={{fontSize:15,fontWeight:600,color:'#4A6080'}}>Sélectionnez un patient</div>
+          <div style={{fontSize:15,fontWeight:600,color:'#5B6268'}}>Sélectionnez un patient</div>
           <div style={{fontSize:12,color:'#8A9BB0'}}>pour voir son dossier complet</div>
           {!isMobile&&<button style={{...S.addBtn,marginTop:16}} onClick={openNew}>+ Nouveau patient</button>}
         </div>
@@ -1000,8 +1035,13 @@ export default function Patients({ session }) {
                   </span>
                 )}
                 {parseMotifs(selected.motif).map(m => (
-                  <span key={m} style={{...S.pdTag,background:'#EBF2F9',color:'#185FA5'}}>{m}</span>
+                  <span key={m} style={{...S.pdTag,background:'#EEF1F3',color:'#5B6268'}}>{m}</span>
                 ))}
+              </div>
+              <div style={S.patientQuickStats}>
+                <span><strong>{patRdvs.length}</strong> séance{patRdvs.length!==1?'s':''}</span>
+                <span><strong>{bilans.filter(b=>b.patient_id===selected.id).length}</strong> bilan{bilans.filter(b=>b.patient_id===selected.id).length!==1?'s':''}</span>
+                <span><strong>{formatMoney(totalPaye)}</strong> encaissés</span>
               </div>
             </div>
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
@@ -1016,6 +1056,7 @@ export default function Patients({ session }) {
             {[
               { key:'infos',   label:'📋 Infos' },
               { key:'seances', label:`🗓 Séances (${patRdvs.length})` },
+              { key:'paiements', label:'Paiements' },
             ].map(tab=>(
               <button key={tab.key}
                 style={{...S.tabBtn,...(activeTab===tab.key?S.tabBtnActive:{})}}
@@ -1025,7 +1066,7 @@ export default function Patients({ session }) {
             ))}
           </div>
 
-          {activeTab==='infos'   && tabInfos}
+          {(activeTab==='infos'||activeTab==='paiements') && tabInfos}
           {activeTab==='seances' && tabSeances}
 
         </div>
@@ -1034,13 +1075,48 @@ export default function Patients({ session }) {
   )
 
   return (
-    <div style={S.wrap}>
-      {isMobile?(showDetail?detailPanel:listPanel):(<>{listPanel}{detailPanel}</>)}
+    <div style={{...S.page,padding:isMobile?'16px 12px 24px':'24px 28px 32px',gap:isMobile?14:18}}>
+      {showDetail&&selected ? detailPanel : (
+        <>
+          <div style={S.pageHeader}>
+            <div>
+              <div style={S.pageEyebrow}>ESPACE CABINET · DOSSIERS PATIENTS</div>
+              <h1 style={S.pageTitle}>Patients & parcours cliniques</h1>
+              <p style={S.pageSubtitle}>Retrouvez les dossiers et suivez l’activité de votre cabinet.</p>
+            </div>
+            <div style={S.pageActions}>
+              <button style={S.exportBtn} onClick={exportPatientsPDF}>Exporter PDF</button>
+              <button style={S.exportBtn} onClick={exportPatientsCSV}>Exporter CSV</button>
+              <button style={S.primaryAction} onClick={openNew}>+ Nouveau patient</button>
+            </div>
+          </div>
+
+          <div style={{...S.summaryGrid,gridTemplateColumns:isMobile?'repeat(2,minmax(0,1fr))':'repeat(4,minmax(0,1fr))'}}>
+            {[
+              { label:'Total patients', value:statusCounts.total, detail:'Dossiers enregistrés', color:'#5B6268', icon:'◎' },
+              { label:'Suivi actif', value:statusCounts.actif, detail:'Patients en accompagnement', color:'#1D7A5A', icon:'↗' },
+              { label:'En bilan', value:statusCounts.bilan, detail:'Évaluation en cours', color:'#A56B12', icon:'◷' },
+              { label:'Archivés', value:statusCounts.archive, detail:'Dossiers clôturés', color:'#68778A', icon:'✓' },
+            ].map(item=>(
+              <div key={item.label} style={{...S.summaryCard,gridTemplateColumns:isMobile?'34px minmax(0,1fr)':'42px minmax(0,1fr)'}}>
+                <div style={{...S.summaryIcon,color:item.color,background:`${item.color}12`}}>{item.icon}</div>
+                <div style={S.summaryContent}>
+                  <span style={S.summaryLabel}>{item.label}</span>
+                  <strong style={S.summaryValue}>{item.value}</strong>
+                  <span style={S.summaryDetail}>{item.detail}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {listPanel}
+        </>
+      )}
 
       {/* MODAL PATIENT */}
       {modal&&(
         <div style={S.overlay} onClick={()=>setModal(false)}>
-          <div style={{...S.modalBox,maxWidth:isMobile?'100%':580,borderRadius:isMobile?'16px 16px 0 0':16}} onClick={e=>e.stopPropagation()}>
+          <div style={{...S.modalBox,maxWidth:isMobile?'100%':580,borderRadius:isMobile?'9px 9px 0 0':9}} onClick={e=>e.stopPropagation()}>
             <div style={S.modalHead}>
               <span style={S.modalTitle}>{editPat?'Modifier le patient':'Nouveau patient'}</span>
               <button style={S.closeBtn} onClick={()=>setModal(false)}>✕</button>
@@ -1112,7 +1188,7 @@ export default function Patients({ session }) {
       {/* MODAL PAIEMENT */}
       {paymentModal && selected && (
         <div style={S.overlay} onClick={closePaymentModal}>
-          <div style={{...S.modalBox,maxWidth:isMobile?'100%':420,borderRadius:isMobile?'16px 16px 0 0':16}} onClick={e=>e.stopPropagation()}>
+          <div style={{...S.modalBox,maxWidth:isMobile?'100%':420,borderRadius:isMobile?'9px 9px 0 0':9}} onClick={e=>e.stopPropagation()}>
             <div style={S.modalHead}>
               <span style={S.modalTitle}>{editingPayment ? 'Modifier le paiement' : 'Ajouter un paiement'}</span>
               <button style={S.closeBtn} onClick={closePaymentModal} disabled={paymentSaving}>✕</button>
@@ -1170,7 +1246,7 @@ export default function Patients({ session }) {
 
       {invoiceModal && selected && (
         <div style={S.overlay} onClick={()=>setInvoiceModal(false)}>
-          <div style={{...S.modalBox,maxWidth:isMobile?'100%':420,borderRadius:isMobile?'16px 16px 0 0':16}} onClick={e=>e.stopPropagation()}>
+          <div style={{...S.modalBox,maxWidth:isMobile?'100%':420,borderRadius:isMobile?'9px 9px 0 0':9}} onClick={e=>e.stopPropagation()}>
             <div style={S.modalHead}>
               <span style={S.modalTitle}>Créer une facture</span>
               <button style={S.closeBtn} onClick={()=>setInvoiceModal(false)}>✕</button>
@@ -1237,11 +1313,11 @@ export default function Patients({ session }) {
       {/* MODAL NOTE DE SÉANCE */}
       {noteValidationModal && (
         <div style={{...S.overlay, zIndex: 2000}} onClick={()=>setNoteValidationModal(false)}>
-          <div style={{...S.modalBox,maxWidth:isMobile?'100%':420,borderRadius:isMobile?'16px 16px 0 0':16, zIndex: 2001}} onClick={e=>e.stopPropagation()}>
+          <div style={{...S.modalBox,maxWidth:isMobile?'100%':420,borderRadius:isMobile?'9px 9px 0 0':9, zIndex: 2001}} onClick={e=>e.stopPropagation()}>
             <div style={{padding:'28px 24px 12px',display:'flex',flexDirection:'column',alignItems:'center',gap:12,textAlign:'center'}}>
               <div style={{width:52,height:52,borderRadius:'50%',background:'#FCEBEB',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24}}>⚠️</div>
-              <div style={{fontFamily:'Georgia, serif',fontSize:20,color:'#0C447C',fontWeight:700}}>Informations incomplètes</div>
-              <div style={{fontSize:13,color:'#4A6080',lineHeight:1.7,whiteSpace:'pre-line'}}>{noteValidationMessage}</div>
+              <div style={{fontSize:20,color:'#343A40',fontWeight:700}}>Informations incomplètes</div>
+              <div style={{fontSize:13,color:'#5B6268',lineHeight:1.7,whiteSpace:'pre-line'}}>{noteValidationMessage}</div>
             </div>
             <div style={{padding:'12px 24px 24px',display:'flex',justifyContent:'center'}}>
               <button style={{...S.saveBtn,minWidth:140}} onClick={()=>setNoteValidationModal(false)}>Compris</button>
@@ -1252,7 +1328,7 @@ export default function Patients({ session }) {
 
       {noteModal&&(
         <div style={S.overlay} onClick={()=>setNoteModal(false)}>
-          <div style={{...S.modalBox,maxWidth:isMobile?'100%':540,borderRadius:isMobile?'16px 16px 0 0':16}} onClick={e=>e.stopPropagation()}>
+          <div style={{...S.modalBox,maxWidth:isMobile?'100%':540,borderRadius:isMobile?'9px 9px 0 0':9}} onClick={e=>e.stopPropagation()}>
             <div style={S.modalHead}>
               <span style={S.modalTitle}>{editNote?'Modifier la note':'Note de séance'}</span>
               <button style={S.closeBtn} onClick={()=>setNoteModal(false)}>✕</button>
@@ -1335,8 +1411,8 @@ export default function Patients({ session }) {
           <div style={{...S.modalBox,maxWidth:380,borderRadius:16}} onClick={e=>e.stopPropagation()}>
             <div style={{padding:'28px 24px 12px',display:'flex',flexDirection:'column',alignItems:'center',gap:12,textAlign:'center'}}>
               <div style={{width:52,height:52,borderRadius:'50%',background:'#FCEBEB',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24}}>🗑</div>
-              <div style={{fontFamily:'Georgia, serif',fontSize:18,color:'#0C447C'}}>Supprimer ce patient ?</div>
-              <div style={{fontSize:13,color:'#4A6080',lineHeight:1.6}}>
+              <div style={{fontSize:18,color:'#343A40',fontWeight:700}}>Supprimer ce patient ?</div>
+              <div style={{fontSize:13,color:'#5B6268',lineHeight:1.6}}>
                 <strong>{selected.prenom} {selected.nom}</strong> sera supprimé définitivement avec toutes ses données. Cette action est irréversible.
               </div>
             </div>
@@ -1357,8 +1433,8 @@ export default function Patients({ session }) {
           <div style={{...S.modalBox,maxWidth:360,borderRadius:16}} onClick={e=>e.stopPropagation()}>
             <div style={{padding:'28px 24px 12px',display:'flex',flexDirection:'column',alignItems:'center',gap:12,textAlign:'center'}}>
               <div style={{width:52,height:52,borderRadius:'50%',background:'#FCEBEB',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24}}>🗑</div>
-              <div style={{fontFamily:'Georgia, serif',fontSize:17,color:'#0C447C'}}>Supprimer ce paiement ?</div>
-              <div style={{fontSize:13,color:'#4A6080',lineHeight:1.6}}>
+              <div style={{fontSize:17,color:'#343A40',fontWeight:700}}>Supprimer ce paiement ?</div>
+              <div style={{fontSize:13,color:'#5B6268',lineHeight:1.6}}>
                 Le paiement de <strong>{formatMoney(paymentToDelete.montant)}</strong> du <strong>{formatDateFr(paymentToDelete.date_paiement)}</strong> sera supprimé.
               </div>
             </div>
@@ -1376,8 +1452,8 @@ export default function Patients({ session }) {
           <div style={{...S.modalBox,maxWidth:360,borderRadius:16}} onClick={e=>e.stopPropagation()}>
             <div style={{padding:'28px 24px 12px',display:'flex',flexDirection:'column',alignItems:'center',gap:12,textAlign:'center'}}>
               <div style={{width:52,height:52,borderRadius:'50%',background:'#FCEBEB',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24}}>🗑</div>
-              <div style={{fontFamily:'Georgia, serif',fontSize:17,color:'#0C447C'}}>Supprimer cette note ?</div>
-              <div style={{fontSize:13,color:'#4A6080',lineHeight:1.6}}>
+              <div style={{fontSize:17,color:'#343A40',fontWeight:700}}>Supprimer cette note ?</div>
+              <div style={{fontSize:13,color:'#5B6268',lineHeight:1.6}}>
                 La note du <strong>{formatDateFr(noteToDelete.date_seance)}</strong> sera supprimée définitivement.
               </div>
             </div>
@@ -1393,78 +1469,104 @@ export default function Patients({ session }) {
 }
 
 const S = {
+  page:         { flex:1, minWidth:0, minHeight:0, width:'100%', overflowY:'auto', padding:'24px 28px 32px', background:'#F4F7FB', display:'flex', flexDirection:'column', gap:18 },
+  pageHeader:   { display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:18, flexWrap:'wrap' },
+  pageEyebrow:  { color:'#718198', fontSize:10, fontWeight:800, letterSpacing:'0.12em', marginBottom:7 },
+  pageTitle:    { color:'#343A40', fontSize:25, lineHeight:1.2, fontWeight:750, margin:'0 0 5px' },
+  pageSubtitle: { color:'#74849A', fontSize:13, margin:0 },
+  pageActions:  { display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' },
+  exportBtn:    { minHeight:38, padding:'8px 12px', border:'1px solid #D9E2EB', borderRadius:8, background:'#fff', color:'#40556C', fontSize:12, fontWeight:650, cursor:'pointer' },
+  primaryAction:{ minHeight:38, padding:'8px 14px', border:'1px solid #7BA39D', borderRadius:8, background:'#7BA39D', color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer' },
+  summaryGrid:  { display:'grid', gridTemplateColumns:'repeat(4,minmax(0,1fr))', gap:12 },
+  summaryCard:  { minWidth:0, minHeight:104, display:'grid', alignItems:'center', gap:12, padding:15, border:'1px solid #E0E7ED', borderRadius:9, background:'#fff' },
+  summaryIcon:  { width:40, height:40, display:'grid', placeItems:'center', borderRadius:8, fontSize:21, fontWeight:700 },
+  summaryContent:{ minWidth:0, display:'flex', flexDirection:'column', alignItems:'flex-start', gap:1 },
+  summaryLabel: { color:'#63758A', fontSize:11, fontWeight:650 },
+  summaryValue: { color:'#343A40', fontSize:24, lineHeight:1.2 },
+  summaryDetail:{ color:'#8A99AA', fontSize:10, lineHeight:1.4 },
+  registryPanel:{ minWidth:0, display:'flex', flexDirection:'column', border:'1px solid #E0E7ED', borderRadius:9, background:'#fff', overflow:'hidden' },
+  registryToolbar:{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:14, flexWrap:'wrap', paddingBottom:14 },
+  searchWrap:   { position:'relative', flex:'1 1 260px', maxWidth:420, minWidth:0 },
+  searchIcon:   { position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#718198', fontSize:20, lineHeight:1, pointerEvents:'none' },
+  tableHeader:  { gridTemplateColumns:'minmax(220px,1.7fr) minmax(130px,1fr) minmax(170px,1.4fr) minmax(145px,1fr)', gap:14, alignItems:'center', padding:'10px 14px', borderTop:'1px solid #E9EEF3', color:'#7A899B', fontSize:10, fontWeight:750, letterSpacing:'0.06em', textTransform:'uppercase' },
+  patientRow:   { display:'grid', alignItems:'center', gap:14, padding:'13px 14px', border:'1px solid transparent', borderBottomColor:'#E9EEF3', cursor:'pointer', transition:'background .15s,border-color .15s' },
+  patientRowSelected:{ background:'#F0F7F6', borderColor:'#A6D3CD' },
+  patientIdentity:{ minWidth:0, display:'flex', alignItems:'center', gap:11 },
+  patientData:  { minWidth:0, display:'flex', flexDirection:'column', gap:3, color:'#31475D', fontSize:12, overflowWrap:'anywhere' },
+  patientJourney:{ minWidth:0, display:'flex', flexDirection:'column', alignItems:'flex-start', gap:6 },
+  patientQuickStats:{ display:'flex', flexWrap:'wrap', gap:'6px 14px', marginTop:9, color:'#687A8D', fontSize:11 },
   wrap:         { flex:1, display:'flex', overflow:'hidden' },
   listPanel:    { borderRight:'1px solid #DDE5EF', background:'#fff', display:'flex', flexDirection:'column', flexShrink:0 },
-  listHeader:   { padding:'14px 16px 10px', borderBottom:'1px solid #DDE5EF' },
-  search:       { width:'100%', padding:'8px 12px', border:'1.5px solid #DDE5EF', borderRadius:8, fontSize:13, fontFamily:'DM Sans, sans-serif', outline:'none', boxSizing:'border-box' },
-  filters:      { display:'flex', gap:5, marginTop:8, flexWrap:'wrap' },
+  listHeader:   { padding:'16px 18px 0' },
+  search:       { width:'100%', minWidth:0, padding:'9px 12px 9px 36px', border:'1px solid #D9E2EB', borderRadius:7, fontSize:13, fontFamily:'DM Sans, sans-serif', outline:'none', boxSizing:'border-box', background:'#fff' },
+  filters:      { display:'flex', gap:6, flexWrap:'wrap' },
   filterBtn:    { padding:'3px 9px', borderRadius:20, fontSize:11, fontWeight:600, border:'1.5px solid #DDE5EF', background:'none', cursor:'pointer', color:'#8A9BB0', fontFamily:'DM Sans, sans-serif' },
-  filterActive: { borderColor:'#0C447C', background:'#0C447C', color:'#fff' },
-  listCount:    { fontSize:11, color:'#8A9BB0', padding:'6px 16px', fontStyle:'italic' },
-  list:         { flex:1, overflowY:'auto', padding:'6px 8px' },
+  filterActive: { borderColor:'#7BA39D', background:'#7BA39D', color:'#fff' },
+  listCount:    { fontSize:11, color:'#7A899B', padding:'0 18px 9px' },
+  list:         { flex:'none', overflow:'visible', padding:'0 8px 8px' },
   emptyMsg:     { padding:'20px', textAlign:'center', color:'#8A9BB0', fontSize:13 },
   patCard:      { display:'flex', alignItems:'center', gap:10, padding:'9px 10px', borderRadius:10, cursor:'pointer', border:'1.5px solid transparent', marginBottom:4, transition:'all .12s' },
-  patCardSel:   { background:'#EBF2F9', borderColor:'#3B82C4' },
+  patCardSel:   { background:'#EEF1F3', borderColor:'#707A82' },
   patAv:        { width:36, height:36, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, flexShrink:0 },
   patInfo:      { flex:1, minWidth:0 },
-  patName:      { fontSize:13, fontWeight:600, color:'#1A2744' },
+  patName:      { fontSize:13, fontWeight:600, color:'#343A40' },
   patMeta:      { fontSize:11, color:'#8A9BB0', marginTop:1 },
   statBadge:    { fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:20, whiteSpace:'nowrap' },
   pagination:   { display:'flex', alignItems:'center', justifyContent:'center', gap:4, padding:'10px 12px', borderTop:'1px solid #DDE5EF', flexShrink:0 },
-  pageBtn:      { minWidth:30, height:30, borderRadius:6, border:'1.5px solid #DDE5EF', background:'#fff', color:'#4A6080', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'DM Sans, sans-serif', display:'flex', alignItems:'center', justifyContent:'center' },
-  pageBtnActive:{ background:'#0C447C', color:'#fff', borderColor:'#0C447C' },
-  detail:       { flex:1, overflowY:'auto', background:'#F0F4F9', padding:20 },
+  pageBtn:      { minWidth:30, height:30, borderRadius:6, border:'1.5px solid #DDE5EF', background:'#fff', color:'#5B6268', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'DM Sans, sans-serif', display:'flex', alignItems:'center', justifyContent:'center' },
+  pageBtnActive:{ background:'#7BA39D', color:'#fff', borderColor:'#7BA39D' },
+  detail:       { flex:'none', minWidth:0, overflow:'visible', background:'transparent', padding:0 },
   emptyDetail:  { display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:10, color:'#8A9BB0' },
   detailInner:  { display:'flex', flexDirection:'column', gap:14 },
-  pdHeader:     { background:'#fff', borderRadius:12, padding:20, display:'flex', alignItems:'flex-start', gap:16, boxShadow:'0 2px 12px rgba(12,68,124,0.08)' },
+  pdHeader:     { background:'#fff', border:'1px solid #E0E7ED', borderRadius:9, padding:20, display:'flex', alignItems:'flex-start', gap:16 },
   pdAvBig:      { width:56, height:56, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, fontWeight:700, flexShrink:0 },
-  pdName:       { fontFamily:'Georgia, serif', fontSize:22, color:'#0C447C' },
+  pdName:       { fontSize:22, fontWeight:750, color:'#343A40' },
   pdMeta:       { fontSize:12, color:'#8A9BB0', marginTop:3 },
   pdTags:       { display:'flex', gap:6, marginTop:7, flexWrap:'wrap' },
   pdTag:        { fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20 },
-  editBtn:      { padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, border:'1.5px solid #DDE5EF', background:'#fff', color:'#0C447C', cursor:'pointer' },
-  deleteBtn:    { padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, border:'1.5px solid #FACACA', background:'#FFF5F5', color:'#C0392B', cursor:'pointer' },
-  addBtn:       { padding:'8px 14px', background:'#0C447C', color:'#fff', border:'none', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:4 },
+  editBtn:      { padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:650, border:'1px solid #D9E2EB', background:'#fff', color:'#555B60', cursor:'pointer' },
+  deleteBtn:    { padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, border:'1px solid #FACACA', background:'#FFF5F5', color:'#C0392B', cursor:'pointer' },
+  addBtn:       { padding:'8px 14px', background:'#7BA39D', color:'#fff', border:'1px solid #7BA39D', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:4 },
   // Onglets — couleur active = ORANGE #C9A84C, texte blanc
-  tabs:         { display:'flex', gap:6, background:'#fff', borderRadius:10, padding:6, boxShadow:'0 2px 12px rgba(12,68,124,0.08)' },
+  tabs:         { display:'flex', gap:6, background:'#fff', border:'1px solid #E0E7ED', borderRadius:9, padding:5 },
   tabBtn:       { flex:1, padding:'9px 10px', borderRadius:7, border:'none', background:'transparent', fontSize:13, fontWeight:600, color:'#8A9BB0', cursor:'pointer', fontFamily:'DM Sans, sans-serif', textAlign:'center', transition:'all .15s' },
-  tabBtnActive: { background:'#C9A84C', color:'#fff' },
+  tabBtnActive: { background:'#7BA39D', color:'#fff' },
   // Séances
-  seanceBlock:  { background:'#fff', border:'1px solid #DDE5EF', borderLeft:'3px solid #185FA5', borderRadius:10, padding:'12px 14px' },
-  addNoteBtn:   { padding:'5px 12px', background:'#C9A84C', color:'#fff', border:'none', borderRadius:7, fontSize:12, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', fontFamily:'DM Sans, sans-serif' },
-  editNoteBtn:  { padding:'5px 12px', background:'#F0F4F9', color:'#0C447C', border:'1.5px solid #DDE5EF', borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap', fontFamily:'DM Sans, sans-serif' },
-  paymentStat:  { background:'#fff', border:'1px solid #DDE5EF', borderRadius:10, padding:'12px 14px', display:'flex', flexDirection:'column', gap:4 },
+  seanceBlock:  { background:'#fff', border:'1px solid #DDE5EF', borderLeft:'3px solid #5B6268', borderRadius:10, padding:'12px 14px' },
+  addNoteBtn:   { padding:'5px 12px', background:'#7BA39D', color:'#fff', border:'none', borderRadius:7, fontSize:12, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', fontFamily:'DM Sans, sans-serif' },
+  editNoteBtn:  { padding:'5px 12px', background:'#EDF4F1', color:'#7BA39D', border:'1px solid #B7E8ED', borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap', fontFamily:'DM Sans, sans-serif' },
+  paymentStat:  { background:'#fff', border:'1px solid #E0E7ED', borderRadius:8, padding:'12px 14px', display:'flex', flexDirection:'column', gap:4 },
   paymentLabel: { fontSize:10, fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase', color:'#8A9BB0' },
-  paymentItem:  { display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10, background:'#F8FAFD', border:'1px solid #DDE5EF', borderRadius:8, padding:'12px 14px' },
-  paymentEditBtn: { minHeight:34, padding:'6px 12px', borderRadius:8, border:'1.5px solid #C9D8E8', background:'#fff', color:'#0C447C', cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:'DM Sans, sans-serif', whiteSpace:'nowrap' },
+  paymentItem:  { display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10, background:'#fff', border:'1px solid #E0E7ED', borderRadius:8, padding:'12px 14px' },
+  paymentEditBtn: { minHeight:34, padding:'6px 12px', borderRadius:8, border:'1px solid #B7E8ED', background:'#fff', color:'#7BA39D', cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:'DM Sans, sans-serif', whiteSpace:'nowrap' },
   paymentDeleteBtn: { minHeight:34, padding:'6px 12px', borderRadius:8, border:'1.5px solid #FACACA', background:'#FFF5F5', color:'#C0392B', cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:'DM Sans, sans-serif', whiteSpace:'nowrap' },
   noteInline:   { background:'#FEF9F2', border:'1px solid #F5DFB5', borderRadius:8, padding:'10px 12px', marginTop:10 },
   noteFieldLabel:{ fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', color:'#8A9BB0', marginBottom:3 },
-  noteFieldVal: { fontSize:13, color:'#1A2744', lineHeight:1.65, whiteSpace:'pre-wrap' },
+  noteFieldVal: { fontSize:13, color:'#343A40', lineHeight:1.65, whiteSpace:'pre-wrap' },
   noteDeleteBtn:{ padding:'4px 10px', borderRadius:6, border:'1.5px solid #FACACA', background:'#FFF5F5', color:'#C0392B', cursor:'pointer', fontSize:11, fontWeight:600, fontFamily:'DM Sans, sans-serif' },
   // Grille infos
   pdGrid:       { display:'grid', gap:14 },
-  pdCard:       { background:'#fff', borderRadius:12, padding:16, boxShadow:'0 2px 12px rgba(12,68,124,0.08)' },
+  pdCard:       { background:'#fff', border:'1px solid #E0E7ED', borderRadius:9, padding:16 },
   pdCardTitle:  { fontSize:11, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'#8A9BB0', marginBottom:10 },
   pdField:      { marginBottom:9 },
   pdFl:         { fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', color:'#8A9BB0' },
-  pdFv:         { fontSize:13, color:'#1A2744', fontWeight:500, marginTop:1 },
+  pdFv:         { fontSize:13, color:'#343A40', fontWeight:500, marginTop:1 },
   // Modal
   overlay:      { position:'fixed', inset:0, background:'rgba(10,30,60,0.45)', zIndex:100, display:'flex', alignItems:'flex-end', justifyContent:'center', padding:0 },
-  modalBox:     { background:'#fff', width:'100%', boxShadow:'0 8px 32px rgba(12,68,124,0.18)', display:'flex', flexDirection:'column', maxHeight:'92vh' },
+  modalBox:     { background:'#fff', width:'100%', border:'1px solid #E0E7ED', boxShadow:'0 8px 28px rgba(52,58,64,0.12)', display:'flex', flexDirection:'column', maxHeight:'92vh' },
   modalHead:    { padding:'18px 22px 14px', borderBottom:'1px solid #DDE5EF', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 },
-  modalTitle:   { fontFamily:'Georgia, serif', fontSize:19, color:'#0C447C' },
+  modalTitle:   { fontSize:19, fontWeight:700, color:'#343A40' },
   closeBtn:     { width:28, height:28, background:'#F0F4F9', border:'none', borderRadius:6, cursor:'pointer', fontSize:14, color:'#8A9BB0' },
   modalBody:    { padding:'18px 22px', display:'flex', flexDirection:'column', gap:11, overflowY:'auto' },
   modalFoot:    { padding:'12px 22px 16px', display:'flex', gap:8, justifyContent:'flex-end', borderTop:'1px solid #DDE5EF', flexShrink:0 },
   sectionLabel: { fontSize:11, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'#8A9BB0', marginTop:4, marginBottom:2 },
   fg:           { display:'flex', flexDirection:'column', gap:4 },
-  fl:           { fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', color:'#4A6080' },
+  fl:           { fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', color:'#5B6268' },
   fi:           { padding:'8px 12px', border:'1.5px solid #DDE5EF', borderRadius:8, fontSize:13, fontFamily:'DM Sans, sans-serif', outline:'none', width:'100%', boxSizing:'border-box' },
   frow:         { display:'grid', gap:12 },
   frow3:        { display:'grid', gap:12 },
   dangerBtn:    { padding:'8px 14px', background:'#FCEBEB', color:'#C0392B', border:'none', borderRadius:8, fontSize:13, fontWeight:600, cursor:'pointer', marginRight:'auto' },
-  cancelBtn:    { padding:'8px 14px', background:'#F0F4F9', border:'none', borderRadius:8, fontSize:13, fontWeight:500, color:'#4A6080', cursor:'pointer' },
-  saveBtn:      { padding:'8px 18px', background:'#0C447C', color:'#fff', border:'none', borderRadius:8, fontSize:13, fontWeight:700, cursor:'pointer' },
-  backBtn:      { display:'inline-flex', alignItems:'center', gap:6, marginBottom:14, padding:'6px 12px', background:'#fff', border:'1.5px solid #DDE5EF', borderRadius:8, fontSize:13, fontWeight:600, color:'#0C447C', cursor:'pointer' },
+  cancelBtn:    { padding:'8px 14px', background:'#F0F4F9', border:'none', borderRadius:8, fontSize:13, fontWeight:500, color:'#5B6268', cursor:'pointer' },
+  saveBtn:      { padding:'8px 18px', background:'#7BA39D', color:'#fff', border:'none', borderRadius:8, fontSize:13, fontWeight:700, cursor:'pointer' },
+  backBtn:      { display:'inline-flex', alignItems:'center', gap:6, marginBottom:14, padding:'6px 12px', background:'#fff', border:'1px solid #D9E2EB', borderRadius:8, fontSize:13, fontWeight:600, color:'#7BA39D', cursor:'pointer' },
 }

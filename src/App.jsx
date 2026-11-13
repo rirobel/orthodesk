@@ -36,7 +36,7 @@ export default function App() {
   }, [])
 
   if (loading) return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', fontFamily:'sans-serif', color:'#0C447C' }}>
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', fontFamily:'sans-serif', color:'var(--brand)' }}>
       Chargement...
     </div>
   )

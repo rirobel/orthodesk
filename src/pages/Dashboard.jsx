@@ -28,7 +28,7 @@ export default function Dashboard({ session }) {
           <div className="logoMark">
             <img src="/favicon.svg" alt="Logo OrthoDesk" width="20" height="20" />
           </div>
-          <span className="logoText">Ortho<span style={{color:'#C9A84C'}}>Desk</span></span>
+          <span className="logoText">Ortho<span style={{color:'var(--accent)'}}>Desk</span></span>
         </div>
 
         <button className={`hamburgerBtn ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Ouvrir le menu">
@@ -76,7 +76,7 @@ function ComingSoon({ title }) {
   return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',flexDirection:'column',gap:'12px',color:'#8A9BB0'}}>
       <div style={{fontSize:'48px'}}>🚧</div>
-      <div style={{fontSize:'18px',fontWeight:'600',color:'#0C447C'}}>{title}</div>
+      <div style={{fontSize:'18px',fontWeight:'600',color:'#343A40'}}>{title}</div>
       <div style={{fontSize:'13px'}}>Module en cours de développement</div>
     </div>
   )

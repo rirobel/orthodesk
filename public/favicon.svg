@@ -1,28 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Cercle bleu -->
-  <circle cx="50" cy="50" r="47" fill="white" stroke="#0C447C" stroke-width="5"/>
-  
-  <!-- Cerveau doré -->
-  <g transform="translate(18, 22) scale(0.52)">
-    <!-- Corps principal cerveau -->
-    <path d="M28 55 Q15 50 14 38 Q13 25 24 20 Q32 15 40 20 Q44 15 52 16 Q62 12 70 20 Q80 15 88 22 Q98 30 96 43 Q94 54 84 58 Q88 68 82 74 Q74 78 66 74 Q60 80 52 78 Q44 80 38 74 Q30 78 22 72 Q14 66 18 58 Z" 
-          fill="#C9A84C" stroke="#b8892a" stroke-width="1.5"/>
-    <!-- Sillon central -->
-    <path d="M52 16 Q50 30 50 55 Q50 68 52 78" fill="none" stroke="#b8892a" stroke-width="1.8" stroke-linecap="round"/>
-    <!-- Sillons gauche -->
-    <path d="M22 35 Q32 30 40 34" fill="none" stroke="#b8892a" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M18 48 Q28 43 38 47" fill="none" stroke="#b8892a" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M22 60 Q30 56 38 59" fill="none" stroke="#b8892a" stroke-width="1.5" stroke-linecap="round"/>
-    <!-- Sillons droit -->
-    <path d="M62 28 Q70 24 80 28" fill="none" stroke="#b8892a" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M62 42 Q70 38 80 42" fill="none" stroke="#b8892a" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M62 56 Q70 52 80 56" fill="none" stroke="#b8892a" stroke-width="1.5" stroke-linecap="round"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 768">
+  <rect width="768" height="768" fill="#fff"/>
+  <circle cx="384" cy="384" r="270" fill="none" stroke="#B8CBBF" stroke-width="54"/>
 
-  <!-- Ondes vocales bleues -->
-  <g transform="translate(52, 28)">
-    <!-- Ligne de base -->
-    <path d="M0 14 L4 14 L6 4 L9 24 L12 8 L15 20 L18 10 L21 22 L24 6 L27 26 L30 12 L33 18 L36 14 L40 14" 
-          fill="none" stroke="#0C447C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
+  <path d="M335 314c-6 25 3 47 24 55 19 7 49 7 73-2l47 55 17-62c30-9 48-30 48-57 0-25-15-44-40-54 7-23-4-48-27-58-13-6-27-7-40-3-14-22-42-29-66-18-16-17-43-19-61-3-20-10-45-2-53 19-24 1-42 20-42 43 0 18 10 34 27 42 0 24 16 42 40 45z" fill="#B8CBBF"/>
+
+  <path d="M293 326c-11-8-17-21-17-35 0-22 16-39 39-42-2-19 9-37 28-43 13-4 26-2 37 6 10-17 31-24 50-17 11 4 19 13 23 24 14-9 33-9 47 1 17 12 22 34 13 51 17 6 28 20 28 37 0 23-20 40-46 40h-22l-20 44-37-44h-98c-11 0-20-8-25-22z" fill="#fff" stroke="#B8CBBF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="384" y="472" text-anchor="middle" fill="#D9AA52" font-family="Impact, 'Arial Narrow', sans-serif" font-size="57" font-weight="700" letter-spacing="10" textLength="378" lengthAdjust="spacingAndGlyphs">ORTHODESK</text>
 </svg>

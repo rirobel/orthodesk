@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { supabase } from '../supabase'
 
-const ORANGE = '#C9A84C'
-const BLEU   = '#0C447C'
+const ORANGE = '#A9BAAA'
+const BLEU   = '#7BA39D'
 
 const MODULES = [
   {
     icon: '🗓',
     title: 'Agenda',
     desc: 'Planifiez vos séances semaine par semaine. Cliquez sur un créneau pour créer un RDV en 10 secondes.',
-    color: '#185FA5',
-    bg: '#EBF2F9',
+    color: '#5B6268',
+    bg: '#EEF1F3',
   },
   {
     icon: '👤',
@@ -231,7 +231,7 @@ export default function Onboarding({ session, onDone }) {
 const S = {
   wrap: {
     minHeight: '100vh',
-    background: 'radial-gradient(ellipse at 12% 14%, rgba(201, 168, 76, 0.14), transparent 35%), linear-gradient(135deg, #F5F8FC 0%, #EEF4FA 100%)',
+    background: 'radial-gradient(ellipse at 12% 14%, rgba(169, 186, 170, 0.12), transparent 35%), linear-gradient(135deg, #F4F7FB 0%, #EEF4F3 100%)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -240,9 +240,9 @@ const S = {
   },
   card: {
     background: '#fff',
-    border: '1px solid #E5ECF3',
-    borderRadius: 22,
-    boxShadow: '0 22px 58px rgba(26,39,68,0.11)',
+    border: '1px solid var(--line)',
+    borderRadius: 9,
+    boxShadow: 'none',
     width: '100%',
     maxWidth: 560,
     overflow: 'hidden',
@@ -281,15 +281,15 @@ const S = {
   },
   sub: {
     fontSize: 14,
-    color: '#4A6080',
+    color: '#5B6268',
     lineHeight: 1.7,
     margin: 0,
   },
   featureList: { display: 'flex', flexDirection: 'column', gap: 8, margin: '4px 0' },
-  featureItem: { fontSize: 13, color: '#1A2744', display: 'flex', alignItems: 'center', gap: 10 },
+  featureItem: { fontSize: 13, color: '#343A40', display: 'flex', alignItems: 'center', gap: 10 },
   formGrid: { display: 'flex', flexDirection: 'column', gap: 12 },
   fg: { display: 'flex', flexDirection: 'column', gap: 4 },
-  fl: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#4A6080' },
+  fl: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#5B6268' },
   fi: {
     padding: '9px 13px',
     border: '1.5px solid #DDE5EF',
@@ -316,7 +316,7 @@ const S = {
     padding: '11px 13px',
     background: '#F8FAFD',
     borderRadius: 10,
-    borderLeft: '3px solid #185FA5',
+    borderLeft: '3px solid #5B6268',
   },
   moduleIcon: {
     width: 36, height: 36, borderRadius: 8,
@@ -324,7 +324,7 @@ const S = {
     fontSize: 18, flexShrink: 0,
   },
   moduleTitle: { fontSize: 13, fontWeight: 700, marginBottom: 2 },
-  moduleDesc:  { fontSize: 12, color: '#4A6080', lineHeight: 1.5 },
+  moduleDesc:  { fontSize: 12, color: '#5B6268', lineHeight: 1.5 },
   suggestionRow: {
     display: 'flex', gap: 12, width: '100%',
   },
@@ -343,17 +343,17 @@ const S = {
     background: BLEU,
     color: '#fff',
     border: 'none',
-    borderRadius: 11,
+    borderRadius: 8,
     fontSize: 13,
     fontWeight: 700,
     cursor: 'pointer',
     fontFamily: 'DM Sans, sans-serif',
-    boxShadow: '0 4px 12px rgba(12,68,124,0.18)',
+    boxShadow: '0 4px 12px rgba(52,58,64,0.18)',
   },
   btnSecondary: {
     padding: '12px 16px',
-    background: '#F0F4F9',
-    color: '#4A6080',
+    background: '#EDF4F1',
+    color: '#5B6268',
     border: 'none',
     borderRadius: 10,
     fontSize: 13,

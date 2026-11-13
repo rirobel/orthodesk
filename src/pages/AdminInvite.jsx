@@ -71,13 +71,13 @@ export default function AdminInvite({ session }) {
       <div className="adminHeader">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
-            <ellipse cx="10" cy="10" rx="7" ry="6" stroke="#0C447C" strokeWidth="1.5"/>
-            <path d="M10 4Q13 6 13 10Q13 14 10 16" stroke="#0C447C" strokeWidth="1.2" strokeLinecap="round"/>
-            <path d="M7 5Q5 8 6 11Q7 14 9 15" stroke="#0C447C" strokeWidth="1" strokeLinecap="round"/>
+            <ellipse cx="10" cy="10" rx="7" ry="6" stroke="var(--brand)" strokeWidth="1.5"/>
+            <path d="M10 4Q13 6 13 10Q13 14 10 16" stroke="var(--brand)" strokeWidth="1.2" strokeLinecap="round"/>
+            <path d="M7 5Q5 8 6 11Q7 14 9 15" stroke="var(--brand)" strokeWidth="1" strokeLinecap="round"/>
           </svg>
           <span style={{ fontSize: '1.15rem', fontWeight: 700 }}>
-            <span style={{ color: '#0C447C' }}>Ortho</span>
-            <span style={{ color: '#C9A84C' }}>Desk</span>
+            <span style={{ color: 'var(--brand-strong)' }}>Ortho</span>
+            <span style={{ color: 'var(--accent)' }}>Desk</span>
             <span style={{ color: '#888', fontWeight: 400, fontSize: '0.85rem', marginLeft: 8 }}>Admin</span>
           </span>
         </div>
@@ -94,7 +94,7 @@ export default function AdminInvite({ session }) {
 
       {/* Carte invitation */}
       <div className="adminCard">
-        <h2 style={{ margin: '0 0 0.4rem', color: '#0C447C', fontSize: '1.25rem' }}>
+        <h2 style={{ margin: '0 0 0.4rem', color: 'var(--brand-strong)', fontSize: '1.25rem' }}>
           Inviter une orthophoniste
         </h2>
         <p style={{ margin: '0 0 1.5rem', color: '#888', fontSize: '0.9rem' }}>
@@ -125,7 +125,7 @@ export default function AdminInvite({ session }) {
 
       {/* Liste utilisateurs inscrits */}
       <div className="adminCard adminUsersCard">
-        <h3 style={{ margin: '0 0 1.2rem', color: '#0C447C', fontSize: '1.05rem' }}>
+        <h3 style={{ margin: '0 0 1.2rem', color: 'var(--brand-strong)', fontSize: '1.05rem' }}>
           Orthophonistes inscrites ({users.length})
         </h3>
 

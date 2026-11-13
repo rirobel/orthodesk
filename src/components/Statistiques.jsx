@@ -14,6 +14,12 @@ function monthLabel(k) {
   const [y, m] = k.split('-')
   return new Date(y, m - 1).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
 }
+function fmtDate(value) {
+  if (!value) return ''
+  const date = new Date(value.length === 10 ? `${value}T00:00:00` : value)
+  if (Number.isNaN(date.getTime())) return String(value)
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
+}
 function calcAge(dob) {
   if (!dob) return null
   const d = new Date(dob), now = new Date()
@@ -22,21 +28,21 @@ function calcAge(dob) {
   return a
 }
 
-const PALETTE = ['#0C447C','#185FA5','#1D9E75','#E89020','#7B5EA7','#C0392B','#3B82C4','#D4884A']
+const PALETTE = ['#7BA39D','#5B6268','#1D9E75','#E89020','#7B5EA7','#C0392B','#707A82','#D4884A']
 const MOTIF_COLORS = {
   'Aphasie post-AVC':          '#C0392B',
   'Bégaiement':                '#E89020',
   'Retard de langage':         '#1D9E75',
   'Trisomie 21':               '#7B5EA7',
-  'Dyslexie / Dysorthographie':'#185FA5',
-  'TSA (Autisme)':             '#0C447C',
+  'Dyslexie / Dysorthographie':'#5B6268',
+  'TSA (Autisme)':             '#7BA39D',
   'Dysphagie':                 '#D4884A',
-  'Dysphonie':                 '#3B82C4',
+  'Dysphonie':                 '#707A82',
   'Autre':                     '#8A9BB0',
 }
 
 // ─── Mini graphe barres ───────────────────────────────────────────────────────
-function BarChart({ data, color = '#0C447C', height = 120, valueFormatter = fmt }) {
+function BarChart({ data, color = '#7BA39D', height = 120, valueFormatter = fmt }) {
   const max = Math.max(...data.map(d => d.value), 1)
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height, paddingTop: 20, position: 'relative' }}>
@@ -89,7 +95,7 @@ function DonutChart({ segments, size = 120 }) {
         offset += dash
         return el
       })}
-      <text x={cx} y={cy - 6} textAnchor="middle" fontSize="18" fontWeight="700" fill="#0C447C" fontFamily="Georgia, serif">
+      <text x={cx} y={cy - 6} textAnchor="middle" fontSize="18" fontWeight="700" fill="#7BA39D" fontFamily="Georgia, serif">
         {total}
       </text>
       <text x={cx} y={cy + 10} textAnchor="middle" fontSize="9" fill="#8A9BB0" fontFamily="DM Sans, sans-serif">
@@ -100,7 +106,7 @@ function DonutChart({ segments, size = 120 }) {
 }
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
-function KPI({ label, value, sub, color = '#0C447C', icon, trend }) {
+function KPI({ label, value, sub, color = '#7BA39D', icon, trend }) {
   return (
     <div style={S.kpiCard}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -136,17 +142,37 @@ function SectionTitle({ children }) {
 }
 
 const S = {
-  wrap:            { flex: 1, overflowY: 'auto', background: '#F0F4F9', fontFamily: 'DM Sans, sans-serif' },
+  wrap:            { flex: 1, overflowY: 'auto', background: 'var(--page-bg)', fontFamily: 'DM Sans, sans-serif' },
   pageHeader:      { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 0', flexWrap: 'wrap', gap: 12 },
-  pageTitle:       { fontFamily: 'Georgia, serif', fontSize: 22, color: '#0C447C', fontWeight: 700 },
+  pageTitle:       { fontSize: 22, color: '#343A40', fontWeight: 750 },
   pageSub:         { fontSize: 12, color: '#8A9BB0', marginTop: 2 },
-  periodeBar:      { display: 'flex', gap: 4, background: '#fff', padding: 4, borderRadius: 10, boxShadow: '0 1px 6px rgba(12,68,124,0.08)' },
+  pageEyebrow:     { color: '#68737A', fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', marginBottom: 5 },
+  periodeBar:      { display: 'flex', gap: 4, background: '#fff', padding: 4, borderRadius: 10, boxShadow: '0 1px 6px rgba(52,58,64,0.08)' },
   periodeBtn:      { padding: '5px 14px', borderRadius: 7, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'none', color: '#8A9BB0', fontFamily: 'DM Sans, sans-serif' },
-  periodeBtnActive:{ background: '#0C447C', color: '#fff' },
+  periodeBtnActive:{ background: '#7BA39D', color: '#fff' },
   content:         { padding: '16px 24px 32px', display: 'flex', flexDirection: 'column', gap: 16 },
   kpiGrid:         { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 4 },
-  kpiCard:         { background: '#fff', borderRadius: 12, padding: '16px 18px', boxShadow: '0 2px 12px rgba(12,68,124,0.07)' },
-  chartCard:       { background: '#fff', borderRadius: 12, padding: '16px 18px', boxShadow: '0 2px 12px rgba(12,68,124,0.07)' },
+  activityKpiGrid: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12 },
+  kpiCard:         { background: '#fff', border: '1px solid var(--line)', borderRadius: 9, padding: '16px 18px' },
+  chartCard:       { background: '#fff', border: '1px solid var(--line)', borderRadius: 9, padding: '16px 18px' },
+  activitySectionHeader:{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 },
+  activitySectionTitle:{ margin: 0, color: '#343A40', fontSize: 15, fontWeight: 750 },
+  activitySectionSub:{ margin: '4px 0 0', color: '#7B858B', fontSize: 11 },
+  activitySectionCount:{ padding: '5px 8px', borderRadius: 6, background: '#EDF4F1', color: '#567771', fontSize: 10, fontWeight: 750 },
+  activityTableWrap:{ width: '100%', overflowX: 'auto' },
+  activityTable:{ width: '100%', minWidth: 650, borderCollapse: 'collapse', textAlign: 'left' },
+  activityTh:{ padding: '9px 10px', color: '#707A82', fontSize: 10, fontWeight: 750, textTransform: 'uppercase', borderBottom: '1px solid #E8ECEE', whiteSpace: 'nowrap' },
+  activityTd:{ padding: '11px 10px', color: '#555B60', fontSize: 11, borderBottom: '1px solid #EEF1F2', whiteSpace: 'nowrap' },
+  activityPatientCell:{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderBottom: '1px solid #EEF1F2' },
+  activityAvatar:{ width: 30, height: 30, flex: '0 0 30px', display: 'grid', placeItems: 'center', borderRadius: '50%', background: '#EDF4F1', color: '#567771', fontSize: 10, fontWeight: 750 },
+  activityPatientName:{ display: 'block', color: '#343A40', fontSize: 11, fontWeight: 700 },
+  activityPatientStatus:{ display: 'block', marginTop: 2, color: '#7B858B', fontSize: 10 },
+  activityEmpty:{ padding: '20px 10px', color: '#7B858B', fontSize: 12, textAlign: 'center' },
+  activityTimeline:{ display: 'flex', flexDirection: 'column' },
+  activityEvent:{ display: 'grid', gridTemplateColumns: '9px minmax(0,1fr) auto', alignItems: 'center', gap: 11, minHeight: 52, borderBottom: '1px solid #EEF1F2' },
+  activityDot:{ width: 8, height: 8, borderRadius: '50%' },
+  activityEventBody:{ minWidth: 0 },
+  activityTime:{ color: '#7B858B', fontSize: 10, whiteSpace: 'nowrap' },
   empty:           { fontSize: 12, color: '#B0BBCC', fontStyle: 'italic', padding: '12px 0' },
 }
 
@@ -157,7 +183,7 @@ export default function Statistiques({ session }) {
   const [factures, setFactures]   = useState([])
   const [bilans, setBilans]       = useState([])
   const [loading, setLoading]     = useState(true)
-  const [periode, setPeriode]     = useState('6m') // 3m | 6m | 12m | all
+  const [periode, setPeriode]     = useState('mois')
 
   function useIsMobile() {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 700)
@@ -173,6 +199,7 @@ export default function Statistiques({ session }) {
   const styles = {
     ...S,
     chartsGrid: { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 },
+    activityKpiGrid: { ...S.activityKpiGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,minmax(0,1fr))' },
   }
 
   const load = useCallback(async () => {
@@ -195,9 +222,13 @@ export default function Statistiques({ session }) {
   // ── Fenêtre temporelle ──────────────────────────────────────────────────────
   const now = new Date()
   const cutoff = new Date(now)
-  if (periode === '3m')  cutoff.setMonth(now.getMonth() - 3)
-  if (periode === '6m')  cutoff.setMonth(now.getMonth() - 6)
-  if (periode === '12m') cutoff.setMonth(now.getMonth() - 12)
+  if (periode === 'semaine') {
+    const day = now.getDay()
+    cutoff.setDate(now.getDate() - (day === 0 ? 6 : day - 1))
+    cutoff.setHours(0, 0, 0, 0)
+  }
+  if (periode === 'mois') cutoff.setDate(1)
+  if (periode === '6m') cutoff.setMonth(now.getMonth() - 6)
   if (periode === 'all') cutoff.setFullYear(2000)
 
   const rdvsFilt     = rdvs.filter(r => new Date(r.date) >= cutoff)
@@ -227,7 +258,7 @@ export default function Statistiques({ session }) {
   const trendRev     = revMoisPrec > 0 ? Math.round(((revMoisCur - revMoisPrec) / revMoisPrec) * 100) : null
 
   // ── Graphe séances par mois ─────────────────────────────────────────────────
-  const nbMois = periode === '3m' ? 3 : periode === '6m' ? 6 : periode === '12m' ? 12 : 12
+  const nbMois = periode === '6m' ? 6 : 12
   const moisListe = []
   for (let i = nbMois - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
@@ -245,7 +276,7 @@ export default function Statistiques({ session }) {
 
   // ── Répartition par type de séance ─────────────────────────────────────────
   const typesSeances = [
-    { label: 'Bilan',         value: nbBilans,  color: '#185FA5' },
+    { label: 'Bilan',         value: nbBilans,  color: '#5B6268' },
     { label: 'Rééducation',   value: nbReeduc,  color: '#1D9E75' },
     { label: 'Suivi',         value: nbSuivi,   color: '#E89020' },
     { label: 'Téléconsult.',  value: nbTele,    color: '#7B5EA7' },
@@ -264,7 +295,7 @@ export default function Statistiques({ session }) {
   // ── Répartition par statut patient ─────────────────────────────────────────
   const statutsData = [
     { label: 'Actif',    value: nbActifs,   color: '#1D7A5A' },
-    { label: 'En bilan', value: nbEnBilan,  color: '#185FA5' },
+    { label: 'En bilan', value: nbEnBilan,  color: '#5B6268' },
     { label: 'Pause',    value: patients.filter(p => p.statut === 'pause').length,   color: '#E89020' },
     { label: 'Archivé',  value: nbArchives, color: '#B0BBCC' },
   ].filter(s => s.value > 0)
@@ -300,9 +331,68 @@ export default function Statistiques({ session }) {
   })
   const bilansData = Object.entries(bilansParPatho).sort((a, b) => b[1] - a[1])
 
+  const suiviPatients = patients.map(patient => {
+    const patientName = `${patient.prenom || ''} ${patient.nom || ''}`.trim()
+    const patientInvoices = facturesFilt.filter(invoice => String(invoice.patient_id || '') === String(patient.id))
+      .filter(invoice => invoice.statut_paiement !== 'annulé')
+    const totalFacture = patientInvoices.reduce((sum, invoice) => sum + Number(invoice.montant || 0), 0)
+    const totalPaye = patientInvoices.filter(invoice => invoice.statut_paiement === 'payé')
+      .reduce((sum, invoice) => sum + Number(invoice.montant || 0), 0)
+
+    return {
+      ...patient,
+      patientName,
+      seances: rdvsFilt.filter(rdv => rdv.patient_nom?.trim().toLowerCase() === patientName.toLowerCase()).length,
+      bilans: bilansFilt.filter(bilan => String(bilan.patient_id) === String(patient.id)).length,
+      totalFacture,
+      totalPaye,
+      reste: Math.max(totalFacture - totalPaye, 0),
+    }
+  }).filter(patient => patient.seances || patient.bilans || patient.totalFacture)
+    .sort((a, b) => b.reste - a.reste || b.seances - a.seances)
+    .slice(0, 8)
+
+  const recentActivity = [
+    ...rdvsFilt.map(rdv => ({
+      key: `rdv-${rdv.id}`,
+      date: rdv.date,
+      heure: rdv.heure,
+      patient: rdv.patient_nom || 'Patient',
+      title: 'Séance planifiée',
+      detail: `${rdv.duree || 60} min · ${({ bilan:'Bilan initial', reeducation:'Rééducation', suivi:'Suivi', tele:'Téléconsultation' })[rdv.type] || 'Séance'}`,
+      color: '#7BA39D',
+    })),
+    ...bilansFilt.map(bilan => ({
+      key: `bilan-${bilan.id}`,
+      date: bilan.date,
+      patient: patients.find(item => String(item.id) === String(bilan.patient_id))
+        ? `${patients.find(item => String(item.id) === String(bilan.patient_id)).prenom || ''} ${patients.find(item => String(item.id) === String(bilan.patient_id)).nom || ''}`.trim()
+        : 'Patient',
+      title: bilan.statut_avancement === 'termine' ? 'Bilan finalisé' : 'Bilan mis à jour',
+      detail: bilan.bilan_templates?.pathologie || 'Bilan clinique',
+      color: bilan.statut_avancement === 'termine' ? '#1D7A5A' : '#5B6268',
+    })),
+    ...facturesFilt.map(facture => ({
+      key: `facture-${facture.id}`,
+      date: facture.date_seance || facture.date,
+      patient: facture.patient_id
+        ? patients.find(item => String(item.id) === String(facture.patient_id))
+          ? `${patients.find(item => String(item.id) === String(facture.patient_id)).prenom || ''} ${patients.find(item => String(item.id) === String(facture.patient_id)).nom || ''}`.trim()
+          : 'Patient'
+        : 'Patient',
+      title: facture.statut_paiement === 'payé' ? 'Facture réglée' : 'Facture enregistrée',
+      detail: fmtMAD(facture.montant),
+      color: facture.statut_paiement === 'payé' ? '#1D7A5A' : '#E89020',
+    })),
+  ].filter(item => item.date)
+    .sort((a, b) => `${b.date} ${b.heure || ''}`.localeCompare(`${a.date} ${a.heure || ''}`))
+    .slice(0, 8)
+
   // ── Taux occupation (séances / jours ouvrés) ────────────────────────────────
   const joursOuvres = nbMois * 22
   const tauxOccup = nbSeances > 0 ? Math.min(Math.round((nbSeances / joursOuvres) * 100), 100) : 0
+  const heuresPlanifiees = Math.round(rdvsFilt.reduce((sum, rdv) => sum + Number(rdv.duree || 0), 0) / 60 * 10) / 10
+  const bilansFinalises = bilansFilt.filter(b => b.statut_avancement === 'termine').length
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8A9BB0', fontSize: 14, fontFamily: 'DM Sans, sans-serif' }}>
@@ -316,12 +406,12 @@ export default function Statistiques({ session }) {
       {/* ── HEADER ── */}
       <div style={S.pageHeader}>
         <div>
-          <div style={S.pageTitle}>Statistiques du cabinet</div>
-          <div style={S.pageSub}>Vue d'ensemble · données en temps réel</div>
+          <div style={S.pageEyebrow}>ESPACE CABINET · PILOTAGE</div>
+          <h1 style={S.pageTitle}>Activité</h1>
+          <div style={S.pageSub}>Aperçu des séances, bilans et honoraires du cabinet.</div>
         </div>
-        {/* Sélecteur période */}
         <div style={S.periodeBar}>
-          {[['3m','3 mois'],['6m','6 mois'],['12m','12 mois'],['all','Tout']].map(([k, l]) => (
+          {[['semaine','Semaine'],['mois','Mois'],['6m','6 mois'],['all','Tout']].map(([k, l]) => (
             <button key={k}
               style={{ ...S.periodeBtn, ...(periode === k ? S.periodeBtnActive : {}) }}
               onClick={() => setPeriode(k)}>
@@ -333,98 +423,108 @@ export default function Statistiques({ session }) {
 
       <div style={S.content}>
 
-        {/* ── KPIs PATIENTS ── */}
-        <SectionTitle>👥 Patients</SectionTitle>
-        <div style={S.kpiGrid}>
-          <KPI icon="👥" label="Total patients" value={nbPatients} color="#0C447C" sub={`${nbActifs} actifs`} />
-          <KPI icon="✅" label="Actifs" value={nbActifs} color="#1D7A5A" sub={`${Math.round((nbActifs/nbPatients||0)*100)}% du total`} />
-          <KPI icon="📋" label="En bilan" value={nbEnBilan} color="#185FA5" />
-          <KPI icon="🗄" label="Archivés" value={nbArchives} color="#8A9BB0" />
+        <div style={S.activityKpiGrid}>
+          <KPI icon="◷" label="Heures planifiées" value={`${heuresPlanifiees} h`} color="#7BA39D" sub={`${nbSeances} séances sur la période`} />
+          <KPI icon="▤" label="Bilans enregistrés" value={bilansFilt.length} color="#5B6268" sub={`${bilansFinalises} finalisés`} />
+          <KPI icon="↗" label="Honoraires encaissés" value={fmtMAD(revTotal)} color="#1D7A5A" sub={`${fmtMAD(revImpaye)} en attente`} />
         </div>
 
-        {/* ── KPIs SEANCES ── */}
-        <SectionTitle>📅 Séances</SectionTitle>
-        <div style={S.kpiGrid}>
-          <KPI icon="📅" label="Séances totales" value={nbSeances} color="#0C447C" sub={`sur la période`} />
-          <KPI icon="🧪" label="Bilans initiaux" value={nbBilans} color="#185FA5" />
-          <KPI icon="🔄" label="Rééducation" value={nbReeduc} color="#1D9E75" />
-          <KPI icon="📞" label="Téléconsult." value={nbTele} color="#7B5EA7" />
-        </div>
-
-        {/* ── KPIs FINANCIERS ── */}
-        <SectionTitle>💰 Finances</SectionTitle>
-        <div style={S.kpiGrid}>
-          <KPI icon="💰" label="Revenus encaissés" value={fmtMAD(revTotal)} color="#1D7A5A" sub={`sur la période`} />
-          <KPI icon="📆" label="Ce mois" value={fmtMAD(revMoisCur)} color="#0C447C" trend={trendRev} />
-          <KPI icon="⏳" label="Impayés" value={fmtMAD(revImpaye)} color="#C0392B" />
-          <KPI icon="📊" label="Séances / mois (moy.)" value={nbSeances > 0 ? Math.round(nbSeances / nbMois) : 0} color="#E89020" sub="séances" />
-        </div>
-
-        {/* ── GRAPHES ── */}
         <div style={styles.chartsGrid}>
-
-          {/* Séances par mois */}
-          <div style={S.chartCard}>
-            <SectionTitle>Séances par mois</SectionTitle>
-            <BarChart data={seancesParMois} color="#185FA5" height={130} />
-          </div>
-
-          {/* Revenus par mois */}
-          <div style={S.chartCard}>
-            <SectionTitle>Revenus encaissés (MAD)</SectionTitle>
-            <BarChart data={revenusParMois} color="#1D9E75" height={130} valueFormatter={n => n > 0 ? fmt(n) : ''} />
-          </div>
-
-        </div>
-
-        {/* ── RÉPARTITIONS ── */}
-        <div style={styles.chartsGrid}>
-
-          {/* Types séances */}
           <div style={S.chartCard}>
             <SectionTitle>Répartition des séances</SectionTitle>
-            {typesSeances.length === 0
-              ? <div style={S.empty}>Aucune séance sur la période</div>
-              : (
-                <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-                  <DonutChart segments={typesSeances} size={110} />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {typesSeances.map((t, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, flexShrink: 0 }} />
-                        <div style={{ flex: 1, fontSize: 12, color: '#4A6080' }}>{t.label}</div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#0C447C' }}>{t.value}</div>
-                        <div style={{ fontSize: 11, color: '#8A9BB0', width: 32, textAlign: 'right' }}>
-                          {Math.round((t.value / nbSeances) * 100)}%
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-          </div>
-
-          {/* Statuts patients */}
-          <div style={S.chartCard}>
-            <SectionTitle>Statuts des patients</SectionTitle>
-            <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-              <DonutChart segments={statutsData} size={110} />
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {statutsData.map((s, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                    <div style={{ flex: 1, fontSize: 12, color: '#4A6080' }}>{s.label}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0C447C' }}>{s.value}</div>
-                    <div style={{ fontSize: 11, color: '#8A9BB0', width: 32, textAlign: 'right' }}>
-                      {Math.round((s.value / nbPatients) * 100)}%
+            {typesSeances.length === 0 ? <div style={S.empty}>Aucune séance sur la période</div> : (
+              <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+                <DonutChart segments={typesSeances} size={120} />
+                <div style={{ flex: 1, minWidth: 150, display: 'flex', flexDirection: 'column', gap: 9 }}>
+                  {typesSeances.map((type, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: type.color, flexShrink: 0 }} />
+                      <span style={{ flex: 1, fontSize: 12, color: '#5B6268' }}>{type.label}</span>
+                      <strong style={{ fontSize: 12, color: '#343A40' }}>{type.value}</strong>
+                      <span style={{ width: 34, color: '#8A9BB0', fontSize: 10, textAlign: 'right' }}>
+                        {nbSeances ? `${Math.round((type.value / nbSeances) * 100)}%` : '0%'}
+                      </span>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
+          <div style={S.chartCard}>
+            <SectionTitle>Honoraires encaissés (MAD)</SectionTitle>
+            <div style={{ color: '#7B858B', fontSize: 11, marginTop: -8, marginBottom: 2 }}>
+              Évolution mensuelle · {fmtMAD(revTotal)} sur la période
+            </div>
+            <BarChart data={revenusParMois} color="#7BA39D" height={132} valueFormatter={n => n > 0 ? fmt(n) : ''} />
+          </div>
         </div>
+
+        <section style={S.chartCard}>
+          <div style={S.activitySectionHeader}>
+            <div>
+              <h2 style={S.activitySectionTitle}>Suivi financier et thérapeutique</h2>
+              <p style={S.activitySectionSub}>Séances, bilans et règlements associés aux dossiers patients.</p>
+            </div>
+            <span style={S.activitySectionCount}>{suiviPatients.length} dossiers</span>
+          </div>
+          <div style={S.activityTableWrap}>
+            <table style={S.activityTable}>
+              <thead>
+                <tr>
+                  {['Patient', 'Séances / bilans', 'Honoraires', 'Encaissé', 'Reste'].map(label => (
+                    <th key={label} style={S.activityTh}>{label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {suiviPatients.length ? suiviPatients.map(patient => (
+                  <tr key={patient.id}>
+                    <td style={S.activityPatientCell}>
+                      <span style={S.activityAvatar}>{`${patient.prenom?.[0] || ''}${patient.nom?.[0] || ''}`.toUpperCase()}</span>
+                      <span>
+                        <strong style={S.activityPatientName}>{patient.patientName}</strong>
+                        <small style={S.activityPatientStatus}>{patient.statut || 'Patient'}</small>
+                      </span>
+                    </td>
+                    <td style={S.activityTd}>{patient.seances} séances · {patient.bilans} bilans</td>
+                    <td style={S.activityTd}>{fmtMAD(patient.totalFacture)}</td>
+                    <td style={S.activityTd}>{fmtMAD(patient.totalPaye)}</td>
+                    <td style={{...S.activityTd, color:patient.reste>0?'#B36B12':'#1D7A5A', fontWeight:700}}>{fmtMAD(patient.reste)}</td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan={5} style={S.activityEmpty}>Aucune donnée de séance ou de facturation pour cette période.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section style={S.chartCard}>
+          <div style={S.activitySectionHeader}>
+            <div>
+              <h2 style={S.activitySectionTitle}>Journal d’activité</h2>
+              <p style={S.activitySectionSub}>Rendez-vous, bilans et factures enregistrés sur la période.</p>
+            </div>
+            <span style={S.activitySectionCount}>{recentActivity.length} événements</span>
+          </div>
+          {recentActivity.length ? (
+            <div style={S.activityTimeline}>
+              {recentActivity.map(item => (
+                <div key={item.key} style={S.activityEvent}>
+                  <span style={{...S.activityDot, background:item.color}} />
+                  <div style={S.activityEventBody}>
+                    <strong style={S.activityPatientName}>{item.title} · {item.patient}</strong>
+                    <span style={S.activityPatientStatus}>{item.detail}</span>
+                  </div>
+                  <time style={S.activityTime}>{item.heure ? `${item.heure} · ` : ''}{fmtDate(item.date)}</time>
+                </div>
+              ))}
+            </div>
+          ) : <div style={S.empty}>Aucune activité sur cette période</div>}
+        </section>
+
+        <SectionTitle>Analyses complémentaires</SectionTitle>
 
         {/* ── MOTIFS + ÂGES ── */}
         <div style={styles.chartsGrid}>
@@ -439,7 +539,7 @@ export default function Statistiques({ session }) {
                 return (
                   <div key={i} style={{ marginBottom: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                      <span style={{ fontSize: 12, color: '#1A2744', fontWeight: 600 }}>{m.label}</span>
+                      <span style={{ fontSize: 12, color: '#343A40', fontWeight: 600 }}>{m.label}</span>
                       <span style={{ fontSize: 12, color: '#8A9BB0' }}>{m.value} · {pct}%</span>
                     </div>
                     <div style={{ height: 5, borderRadius: 3, background: '#EEF2F7', overflow: 'hidden' }}>
@@ -460,7 +560,7 @@ export default function Statistiques({ session }) {
                 <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
                   {[['Âge moyen', ageMoyen+' ans'], ['Min', ageMin+' ans'], ['Max', ageMax+' ans']].map(([l, v]) => (
                     <div key={l} style={{ flex: 1, textAlign: 'center', background: '#F0F4F9', borderRadius: 8, padding: '8px 4px' }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#0C447C', fontFamily: 'Georgia, serif' }}>{v}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#7BA39D' }}>{v}</div>
                       <div style={{ fontSize: 10, color: '#8A9BB0', marginTop: 2 }}>{l}</div>
                     </div>
                   ))}
@@ -495,9 +595,9 @@ export default function Statistiques({ session }) {
                         }}>
                           {nom.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
                         </div>
-                        <span style={{ fontSize: 12, color: '#1A2744', fontWeight: 600 }}>{nom}</span>
+                        <span style={{ fontSize: 12, color: '#343A40', fontWeight: 600 }}>{nom}</span>
                       </div>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#0C447C' }}>{nb} séances</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#7BA39D' }}>{nb} séances</span>
                     </div>
                     <div style={{ height: 4, borderRadius: 2, background: '#EEF2F7' }}>
                       <div style={{ height: '100%', borderRadius: 2, background: PALETTE[i % PALETTE.length], width: `${Math.round((nb / maxNb) * 100)}%` }} />
@@ -519,7 +619,7 @@ export default function Statistiques({ session }) {
                 return (
                   <div key={i} style={{ marginBottom: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                      <span style={{ fontSize: 12, color: '#1A2744', fontWeight: 600 }}>{patho}</span>
+                      <span style={{ fontSize: 12, color: '#343A40', fontWeight: 600 }}>{patho}</span>
                       <span style={{ fontSize: 12, fontWeight: 700, color: col }}>{nb}</span>
                     </div>
                     <div style={{ height: 4, borderRadius: 2, background: '#EEF2F7' }}>
@@ -539,14 +639,14 @@ export default function Statistiques({ session }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 13, color: '#4A6080' }}>{nbSeances} séances / {joursOuvres} jours ouvrés estimés</span>
-                <span style={{ fontSize: 16, fontWeight: 700, color: '#0C447C', fontFamily: 'Georgia, serif' }}>{tauxOccup}%</span>
+                <span style={{ fontSize: 13, color: '#5B6268' }}>{nbSeances} séances / {joursOuvres} jours ouvrés estimés</span>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#7BA39D' }}>{tauxOccup}%</span>
               </div>
               <div style={{ height: 10, borderRadius: 5, background: '#EEF2F7', overflow: 'hidden' }}>
                 <div style={{
                   height: '100%', borderRadius: 5, transition: 'width .6s ease',
                   background: tauxOccup >= 80 ? 'linear-gradient(90deg,#1D9E75,#1D7A5A)'
-                    : tauxOccup >= 50 ? 'linear-gradient(90deg,#3B82C4,#0C447C)'
+                    : tauxOccup >= 50 ? 'linear-gradient(90deg,#B6CCC5,#7BA39D)'
                     : 'linear-gradient(90deg,#E89020,#C9A84C)',
                   width: `${tauxOccup}%`,
                 }} />

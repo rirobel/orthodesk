@@ -12,25 +12,25 @@ const EMPTY_PROFIL = {
   pays:               'Maroc',
   site_web:           '',
   bio:                '',
-  couleur_principale: '#0C447C',
+  couleur_principale: '#7BA39D',
   couleur_texte:      '#FFFFFF',
   logo_url:           '',
 }
 
 const COULEURS_BG = [
-  { label:'Bleu OrthoDesk', value:'#0C447C' },
+  { label:'Cyan OrthoDesk', value:'#7BA39D' },
   { label:'Orange',         value:'#E89020' },
   { label:'Vert',           value:'#1D9E75' },
   { label:'Violet',         value:'#7B5EA7' },
   { label:'Rouge',          value:'#C0392B' },
-  { label:'Bleu ciel',      value:'#185FA5' },
-  { label:'Ardoise',        value:'#4A6080' },
-  { label:'Noir',           value:'#1A2744' },
+  { label:'Gris moyen',     value:'#5B6268' },
+  { label:'Ardoise',        value:'#5B6268' },
+  { label:'Noir',           value:'#343A40' },
 ]
 
 const COULEURS_TEXTE = [
   { label:'Blanc',        value:'#FFFFFF' },
-  { label:'Noir',         value:'#1A2744' },
+  { label:'Noir',         value:'#343A40' },
   { label:'Gris clair',   value:'#F0F4F9' },
   { label:'Or',           value:'#F5D78E' },
 ]
@@ -85,7 +85,7 @@ export default function Profil({ session }) {
         pays:               data.pays               || 'Maroc',
         site_web:           data.site_web           || '',
         bio:                data.bio                || '',
-        couleur_principale: data.couleur_principale || '#0C447C',
+        couleur_principale: data.couleur_principale || '#7BA39D',
         couleur_texte:      data.couleur_texte      || '#FFFFFF',
         logo_url:           data.logo_url           || '',
       }
@@ -158,7 +158,7 @@ export default function Profil({ session }) {
   function set(key, val) { setProfil(p => ({ ...p, [key]: val })); setSaved(false) }
 
   const initiales = ((profil.prenom?.[0]||'')+(profil.nom?.[0]||'')).toUpperCase() || '?'
-  const couleurBg  = profil.couleur_principale || '#0C447C'
+  const couleurBg  = profil.couleur_principale || '#7BA39D'
   const couleurTxt = profil.couleur_texte      || '#FFFFFF'
 
   if (loading) return (
@@ -175,10 +175,10 @@ export default function Profil({ session }) {
             <img src={logoPreview} alt="Logo"
               style={{ width:58, height:58, borderRadius:10, objectFit:'contain', border:'1.5px solid #DDE5EF', background:'#F8FAFD', flexShrink:0 }}/>
           ) : (
-            <div style={{ ...S.avatar, background:'#0C447C', color:'#FFFFFF' }}>{initiales}</div>
+            <div style={{ ...S.avatar, background:'#7BA39D', color:'#FFFFFF' }}>{initiales}</div>
           )}
           <div>
-            <div style={{ ...S.headerName, color:'#0C447C' }}>
+            <div style={{ ...S.headerName, color:'#343A40' }}>
               {profil.prenom||profil.nom ? `${profil.prenom} ${profil.nom}`.trim() : 'Mon profil'}
             </div>
             <div style={S.headerEmail}>{session.user.email}</div>
@@ -259,7 +259,7 @@ export default function Profil({ session }) {
               ) : (
                 <>
                   <div style={{fontSize:36,marginBottom:8}}>🖼️</div>
-                  <div style={{fontSize:13,fontWeight:600,color:'#0C447C'}}>Cliquer pour ajouter un logo</div>
+                  <div style={{fontSize:13,fontWeight:600,color:'#7BA39D'}}>Cliquer pour ajouter un logo</div>
                   <div style={{fontSize:11,color:'#8A9BB0',marginTop:4}}>PNG · JPG · SVG · WebP — max 2 Mo</div>
                 </>
               )}
@@ -291,7 +291,7 @@ export default function Profil({ session }) {
               {COULEURS_BG.map(c=>(
                 <button key={c.value} title={c.label} style={{
                   ...S.colorDot, background:c.value,
-                  border: couleurBg===c.value?'3px solid #1A2744':'3px solid transparent',
+                  border: couleurBg===c.value?'3px solid #343A40':'3px solid transparent',
                   transform: couleurBg===c.value?'scale(1.2)':'scale(1)',
                 }} onClick={()=>{ set('couleur_principale',c.value); setCustomBg(false) }}/>
               ))}
@@ -299,7 +299,7 @@ export default function Profil({ session }) {
                 <button title="Couleur personnalisée" style={{
                   ...S.colorDot,
                   background: customBg ? couleurBg : 'conic-gradient(red,yellow,lime,aqua,blue,magenta,red)',
-                  border: customBg?'3px solid #1A2744':'3px solid transparent',
+                  border: customBg?'3px solid #343A40':'3px solid transparent',
                   transform: customBg?'scale(1.2)':'scale(1)',
                 }} onClick={()=>{ setCustomBg(true); setTimeout(()=>document.getElementById('bgPicker')?.click(),50) }}/>
                 <input id="bgPicker" type="color" value={couleurBg}
@@ -313,7 +313,7 @@ export default function Profil({ session }) {
                   style={{width:36,height:36,borderRadius:8,border:'1.5px solid #DDE5EF',cursor:'pointer',padding:2}}/>
                 <input style={{...S.fi,width:110,fontFamily:'monospace',fontSize:13}} value={couleurBg}
                   onChange={e=>{ if(/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value)) set('couleur_principale',e.target.value) }}
-                  placeholder="#0C447C"/>
+                  placeholder="#343A40"/>
                 <span style={{fontSize:12,color:'#8A9BB0'}}>Hex</span>
               </div>
             )}
@@ -369,10 +369,10 @@ export default function Profil({ session }) {
           <div style={S.sectionTitle}>Sécurité</div>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
             <div>
-              <div style={{fontSize:13,fontWeight:600,color:'#1A2744'}}>Mot de passe</div>
+              <div style={{fontSize:13,fontWeight:600,color:'#343A40'}}>Mot de passe</div>
               <div style={{fontSize:12,color:'#8A9BB0',marginTop:2}}>Modifiez votre mot de passe de connexion.</div>
             </div>
-            <button style={{padding:'8px 16px',background:'#F0F4F9',color:'#0C447C',border:'1.5px solid #DDE5EF',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans, sans-serif'}}
+            <button style={{padding:'8px 16px',background:'#EDF4F1',color:'#7BA39D',border:'1px solid #B7E8ED',borderRadius:8,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans, sans-serif'}}
               onClick={()=>{ setPwModal(true); setPwError(''); setPwDone(false) }}>
               🔑 Changer le mot de passe
             </button>
@@ -381,7 +381,7 @@ export default function Profil({ session }) {
 
         {/* ── Bouton sauvegarder ───────────────────────────────────────── */}
         <div style={S.footer}>
-          <button style={{...S.saveBtn, background:'#0C447C', opacity:saving?0.7:1}}
+          <button style={{...S.saveBtn, background:'#7BA39D', opacity:saving?0.7:1}}
             onClick={saveProfil} disabled={saving}>
             {saving ? 'Enregistrement…' : '💾 Enregistrer le profil'}
           </button>
@@ -393,17 +393,17 @@ export default function Profil({ session }) {
       {pwModal && (
         <div style={{position:'fixed',inset:0,background:'rgba(10,30,60,0.45)',zIndex:200,display:'flex',alignItems:'flex-end',justifyContent:'center'}}
           onClick={()=>setPwModal(false)}>
-          <div style={{background:'#fff',width:'100%',maxWidth:460,borderRadius:isMobile?'16px 16px 0 0':16,boxShadow:'0 8px 32px rgba(12,68,124,0.18)',display:'flex',flexDirection:'column',maxHeight:'92vh'}}
+          <div style={{background:'#fff',width:'100%',maxWidth:460,border:'1px solid var(--line)',borderRadius:isMobile?'9px 9px 0 0':9,boxShadow:'0 8px 28px rgba(52,58,64,0.12)',display:'flex',flexDirection:'column',maxHeight:'92vh'}}
             onClick={e=>e.stopPropagation()}>
             <div style={{padding:'18px 22px 14px',borderBottom:'1px solid #DDE5EF',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              <span style={{fontFamily:'Georgia, serif',fontSize:18,color:'#0C447C'}}>Changer le mot de passe</span>
+              <span style={{fontSize:18,fontWeight:700,color:'#343A40'}}>Changer le mot de passe</span>
               <button style={{width:28,height:28,background:'#F0F4F9',border:'none',borderRadius:6,cursor:'pointer',fontSize:14,color:'#8A9BB0'}} onClick={()=>setPwModal(false)}>✕</button>
             </div>
             <div style={{padding:'18px 22px',display:'flex',flexDirection:'column',gap:14,overflowY:'auto'}}>
               {pwDone ? (
                 <div style={{textAlign:'center',padding:'16px 0',display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
                   <div style={{width:52,height:52,borderRadius:'50%',background:'#E8F5EE',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24}}>✅</div>
-                  <div style={{fontFamily:'Georgia, serif',fontSize:16,color:'#0C447C'}}>Mot de passe mis à jour !</div>
+                  <div style={{fontSize:16,fontWeight:700,color:'#7BA39D'}}>Mot de passe mis à jour !</div>
                 </div>
               ) : (
                 <>
@@ -440,8 +440,8 @@ export default function Profil({ session }) {
             </div>
             {!pwDone && (
               <div style={{padding:'12px 22px 16px',display:'flex',gap:8,justifyContent:'flex-end',borderTop:'1px solid #DDE5EF'}}>
-                <button style={{padding:'8px 14px',background:'#F0F4F9',border:'none',borderRadius:8,fontSize:13,color:'#4A6080',cursor:'pointer',fontFamily:'DM Sans, sans-serif'}} onClick={()=>setPwModal(false)}>Annuler</button>
-                <button style={{padding:'8px 18px',background:'#0C447C',color:'#FFFFFF',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'DM Sans, sans-serif'}} onClick={changePassword} disabled={pwSaving}>{pwSaving?'Mise à jour…':'Enregistrer'}</button>
+                <button style={{padding:'8px 14px',background:'#F0F4F9',border:'none',borderRadius:8,fontSize:13,color:'#5B6268',cursor:'pointer',fontFamily:'DM Sans, sans-serif'}} onClick={()=>setPwModal(false)}>Annuler</button>
+                <button style={{padding:'8px 18px',background:'#7BA39D',color:'#FFFFFF',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'DM Sans, sans-serif'}} onClick={changePassword} disabled={pwSaving}>{pwSaving?'Mise à jour…':'Enregistrer'}</button>
               </div>
             )}
           </div>
@@ -453,25 +453,25 @@ export default function Profil({ session }) {
 }
 
 const S = {
-  wrap:          { flex:1, overflowY:'auto', background:'#F0F4F9', display:'flex', justifyContent:'center' },
+  wrap:          { flex:1, overflowY:'auto', background:'var(--page-bg)', display:'flex', justifyContent:'center' },
   inner:         { width:'100%', display:'flex', flexDirection:'column', gap:20 },
   centerWrap:    { flex:1, display:'flex', alignItems:'center', justifyContent:'center' },
   loadingMsg:    { fontSize:14, color:'#8A9BB0' },
-  header:        { background:'#fff', borderRadius:14, padding:'20px 24px', display:'flex', alignItems:'center', gap:18, boxShadow:'0 2px 12px rgba(12,68,124,0.08)' },
+  header:        { background:'#fff', border:'1px solid var(--line)', borderRadius:9, padding:'20px 24px', display:'flex', alignItems:'center', gap:18 },
   avatar:        { width:58, height:58, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, fontWeight:700, fontFamily:'Georgia, serif', flexShrink:0 },
   headerName:    { fontFamily:'Georgia, serif', fontSize:20, fontWeight:700 },
   headerEmail:   { fontSize:12, color:'#8A9BB0', marginTop:3 },
-  headerCabinet: { fontSize:12, color:'#4A6080', marginTop:4, fontWeight:600 },
+  headerCabinet: { fontSize:12, color:'#5B6268', marginTop:4, fontWeight:600 },
   alertError:    { background:'#FCEBEB', color:'#C0392B', borderRadius:10, padding:'10px 16px', fontSize:13, fontWeight:600 },
   alertSuccess:  { background:'#E8F5EE', color:'#1D7A5A', borderRadius:10, padding:'10px 16px', fontSize:13, fontWeight:600 },
-  section:       { background:'#fff', borderRadius:14, padding:'18px 20px', display:'flex', flexDirection:'column', gap:12, boxShadow:'0 2px 12px rgba(12,68,124,0.08)' },
+  section:       { background:'#fff', border:'1px solid var(--line)', borderRadius:9, padding:'18px 20px', display:'flex', flexDirection:'column', gap:12 },
   sectionTitle:  { fontSize:11, fontWeight:700, letterSpacing:'0.09em', textTransform:'uppercase', color:'#8A9BB0', marginBottom:2 },
   grid2:         { display:'grid', gap:12 },
   fg:            { display:'flex', flexDirection:'column', gap:5 },
-  fl:            { fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', color:'#4A6080' },
-  fi:            { padding:'9px 12px', border:'1.5px solid #DDE5EF', borderRadius:8, fontSize:13, fontFamily:'DM Sans, sans-serif', outline:'none', width:'100%', boxSizing:'border-box', color:'#1A2744' },
+  fl:            { fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', color:'#5B6268' },
+  fi:            { padding:'9px 12px', border:'1.5px solid #DDE5EF', borderRadius:8, fontSize:13, fontFamily:'DM Sans, sans-serif', outline:'none', width:'100%', boxSizing:'border-box', color:'#343A40' },
   logoDropZone:  { border:'2px dashed #DDE5EF', borderRadius:12, padding:'28px 20px', textAlign:'center', cursor:'pointer', background:'#F8FAFD' },
-  logoChangeBtn: { padding:'6px 12px', background:'#EBF2F9', color:'#0C447C', border:'none', borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'DM Sans, sans-serif' },
+  logoChangeBtn: { padding:'6px 12px', background:'#EDF4F1', color:'#7BA39D', border:'none', borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'DM Sans, sans-serif' },
   logoRemoveBtn: { padding:'6px 12px', background:'#FFF5F5', color:'#C0392B', border:'none', borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'DM Sans, sans-serif' },
   colorPreview:  { borderRadius:10, padding:'14px 18px', display:'flex', flexDirection:'column', gap:4, marginBottom:4 },
   colorGrid:     { display:'flex', flexWrap:'wrap', gap:10, alignItems:'center', marginTop:4 },

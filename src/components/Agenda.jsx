@@ -3,7 +3,7 @@ import { supabase } from '../supabase'
 import './Agenda.css'
 
 const TYPES = {
-  bilan:       { label:'Bilan initial',     bg:'#EBF2F9', border:'#185FA5', bb:'#185FA5' },
+  bilan:       { label:'Bilan initial',     bg:'#EEF1F3', border:'#5B6268', bb:'#5B6268' },
   reeducation: { label:'Rééducation',       bg:'#E8F5EE', border:'#1D9E75', bb:'#1D9E75' },
   suivi:       { label:'Suivi',             bg:'#FEF3E2', border:'#E89020', bb:'#E89020' },
   tele:        { label:'Téléconsultation',  bg:'#F7F0FB', border:'#7B5EA7', bb:'#7B5EA7' },
@@ -138,6 +138,7 @@ export default function Agenda({ session }) {
   const [rdvs, setRdvs]           = useState([])
   const [patients, setPatients]   = useState([])
   const [weekStart, setWeekStart] = useState(getMonday(new Date()))
+  const [filterType, setFilterType] = useState('tous')
   const [loading, setLoading]     = useState(true)
   const [modal, setModal]         = useState(false)
   const [editRdv, setEditRdv]     = useState(null)
@@ -224,75 +225,134 @@ export default function Agenda({ session }) {
   const weekEnd  = addDays(weekStart,5)
   const todayStr = fmt(new Date())
   const weekRdvs = rdvs.filter(r => r.date >= fmt(weekStart) && r.date <= fmt(weekEnd))
+  const visibleWeekRdvs = weekRdvs.filter(r => filterType === 'tous' || r.type === filterType)
+  const upcomingRdvs = rdvs
+    .filter(r => r.date >= todayStr && (filterType === 'tous' || r.type === filterType))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.heure.localeCompare(b.heure))
+    .slice(0, 5)
 
   return (
-    <div style={{flex:1, display:'flex', flexDirection:'column', overflow:'hidden'}} onClick={() => setPopup(null)}>
+    <div className="agendaPage" onClick={() => setPopup(null)}>
+      <header className="agendaHeading">
+        <div>
+          <div className="agendaEyebrow">ESPACE CABINET · ORGANISATION</div>
+          <h1 className="agendaTitle">Calendrier</h1>
+          <p className="agendaSubtitle">Gérez vos consultations, bilans et séances de la semaine.</p>
+        </div>
+        <button className="agendaPrimary" onClick={() => openNew(todayStr)}>+ Nouveau rendez-vous</button>
+      </header>
 
-      {/* TOOLBAR */}
-      <div className="toolbar">
-        <button className="arr" onClick={() => setWeekStart(addDays(weekStart,-7))}>‹</button>
-        <button className="todayBtn" onClick={() => setWeekStart(getMonday(new Date()))}>Aujourd'hui</button>
-        <button className="arr" onClick={() => setWeekStart(addDays(weekStart,7))}>›</button>
-        <span className="weekLbl">{weekStart.getDate()} — {weekEnd.getDate()} {MONTHS[weekEnd.getMonth()]} {weekEnd.getFullYear()}</span>
-        <button className="addBtn" onClick={() => openNew(todayStr)}>+ Nouveau RDV</button>
+      <div className="agendaFilters" role="group" aria-label="Filtrer les rendez-vous par type">
+        {[
+          { key:'tous', label:'Tous les rendez-vous' },
+          ...Object.entries(TYPES).map(([key, type]) => ({ key, label:type.label })),
+        ].map(item => (
+          <button key={item.key} className={filterType===item.key?'agendaFilter active':'agendaFilter'}
+            onClick={() => setFilterType(item.key)}>
+            {item.label}
+          </button>
+        ))}
       </div>
 
-      {/* WEEK HEADER */}
-      <div className="weekHeader">
-        <div className="timeCorner"></div>
-        {weekDays.map((d,i) => {
-          const ds = fmt(d), cnt = weekRdvs.filter(r=>r.date===ds).length
-          return (
-            <div key={i} className="whCell">
-              <div className="whDay">{DAYS[i]}</div>
-              <div className={ds===todayStr ? "whToday" : "whNum"}>{d.getDate()}</div>
-              {cnt > 0 && <div className="whCnt">{cnt}</div>}
+      <div className="agendaWorkspace">
+        <section className="calendarPanel" aria-label="Calendrier hebdomadaire">
+          <div className="toolbar">
+            <div className="calendarControls">
+              <button className="arr" aria-label="Semaine précédente" onClick={() => setWeekStart(addDays(weekStart,-7))}>‹</button>
+              <button className="todayBtn" onClick={() => setWeekStart(getMonday(new Date()))}>Aujourd’hui</button>
+              <button className="arr" aria-label="Semaine suivante" onClick={() => setWeekStart(addDays(weekStart,7))}>›</button>
             </div>
-          )
-        })}
-      </div>
-
-      {/* GRID */}
-      <div className="gridWrap">
-        <div className="grid">
-          <div className="timeCol">
-            {HOURS.map(h => <div key={h} className="tSlot">{h.endsWith(':00') ? h : ''}</div>)}
+            <div className="weekLbl">
+              <strong>{MONTHS[weekStart.getMonth()]} {weekStart.getFullYear()}</strong>
+              <span>{weekStart.getDate()} — {weekEnd.getDate()} {MONTHS[weekEnd.getMonth()]}</span>
+            </div>
           </div>
-          {weekDays.map((d,i) => {
-            const ds = fmt(d)
-            const dayRdvs = rdvs.filter(r => r.date === ds)
-            return (
-              <div key={i} className="dayCol">
-                {HOURS.map(h => (
-                  <div key={h} className="dSlot" style={h.endsWith(':30') ? {borderBottom:'1px dashed rgba(0,0,0,0.05)'} : {}}
-                    onClick={e => { e.stopPropagation(); openNew(ds, h) }} />
-                ))}
-                {dayRdvs.map(rdv => {
-                  const top = ((t2m(rdv.heure) - 480) / 30) * 56
-                  const ht  = Math.max((rdv.duree / 30) * 56 - 4, 22)
-                  const t   = TYPES[rdv.type] || TYPES.bilan
+
+          <div className="calendarScroll">
+            <div className="weekHeader">
+              <div className="timeCorner"></div>
+              {weekDays.map((d,i) => {
+                const ds = fmt(d), cnt = visibleWeekRdvs.filter(r=>r.date===ds).length
+                return (
+                  <div key={i} className="whCell">
+                    <div className="whDay">{DAYS[i]}</div>
+                    <div className={ds===todayStr ? "whToday" : "whNum"}>{d.getDate()}</div>
+                    {cnt > 0 && <div className="whCnt">{cnt} RDV</div>}
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="gridWrap">
+              <div className="grid">
+                <div className="timeCol">
+                  {HOURS.map(h => <div key={h} className="tSlot">{h.endsWith(':00') ? h : ''}</div>)}
+                </div>
+                {weekDays.map((d,i) => {
+                  const ds = fmt(d)
+                  const dayRdvs = visibleWeekRdvs.filter(r => r.date === ds)
                   return (
-                    <div key={rdv.id} className="rdvCard"
-                      style={{top, height:ht, background:t.bg, borderLeftColor:t.border}}
-                      onClick={e => { e.stopPropagation(); setPopup(rdv) }}>
-                      <div className="rcTime">{rdv.heure}</div>
-                      <div className="rcName">{rdv.patient_nom}</div>
-                      <div className="rcType">{rdv.motif || t.label}</div>
+                    <div key={i} className="dayCol">
+                      {HOURS.map(h => (
+                        <div key={h} className="dSlot" style={h.endsWith(':30') ? {borderBottom:'1px dashed rgba(0,0,0,0.05)'} : {}}
+                          onClick={e => { e.stopPropagation(); openNew(ds, h) }} />
+                      ))}
+                      {dayRdvs.map(rdv => {
+                        const top = ((t2m(rdv.heure) - 480) / 30) * 56
+                        const ht  = Math.max((rdv.duree / 30) * 56 - 4, 22)
+                        const t   = TYPES[rdv.type] || TYPES.bilan
+                        return (
+                          <div key={rdv.id} className="rdvCard"
+                            style={{top, height:ht, background:t.bg, borderLeftColor:t.border}}
+                            onClick={e => { e.stopPropagation(); setPopup(rdv) }}>
+                            <div className="rcTime">{rdv.heure}</div>
+                            <div className="rcName">{rdv.patient_nom}</div>
+                            <div className="rcType">{rdv.motif || t.label}</div>
+                          </div>
+                        )
+                      })}
                     </div>
                   )
                 })}
               </div>
-            )
-          })}
-        </div>
-      </div>
+            </div>
+          </div>
 
-      {/* STATS */}
-      <div className="statsBar">
-        <span className="stat">📅 {weekRdvs.length} RDV cette semaine</span>
-        <span className="stat">🟢 {weekRdvs.filter(r=>r.type==='reeducation').length} rééducation</span>
-        <span className="stat">🔵 {weekRdvs.filter(r=>r.type==='bilan').length} bilans</span>
-        <span className="stat" style={{marginLeft:'auto', color:'#8A9BB0'}}>Clic sur créneau = nouveau RDV</span>
+          <div className="statsBar">
+            <span className="stat">{visibleWeekRdvs.length} RDV cette semaine</span>
+            <span className="stat">{visibleWeekRdvs.filter(r=>r.type==='reeducation').length} rééducations</span>
+            <span className="stat">{visibleWeekRdvs.filter(r=>r.type==='bilan').length} bilans</span>
+          </div>
+        </section>
+
+        <aside className="upcomingPanel">
+          <div className="upcomingHeader">
+            <div>
+              <h2>À venir</h2>
+              <p>Vos prochains rendez-vous</p>
+            </div>
+            <span className="upcomingCount">{upcomingRdvs.length}</span>
+          </div>
+          {upcomingRdvs.length ? (
+            <div className="upcomingList">
+              {upcomingRdvs.map(rdv => {
+                const type = TYPES[rdv.type] || TYPES.bilan
+                return (
+                  <button key={rdv.id} className="upcomingItem" onClick={e => { e.stopPropagation(); setPopup(rdv) }}>
+                    <span className="upcomingDate">
+                      {new Date(`${rdv.date}T00:00:00`).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})}
+                    </span>
+                    <strong>{rdv.patient_nom}</strong>
+                    <span className="upcomingMeta">{rdv.heure} · {rdv.duree} min</span>
+                    <span className="upcomingType" style={{color:type.border,background:type.bg}}>{type.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="upcomingEmpty">Aucun rendez-vous à venir pour ce filtre.</div>
+          )}
+        </aside>
       </div>
 
       {/* POPUP DETAIL */}

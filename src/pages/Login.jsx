@@ -6,7 +6,7 @@ import './Login.css'
 
 function EyeIcon({ show, size = 20 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#0C447C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="var(--brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       {show ? (
         <>
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -147,8 +147,8 @@ export default function Login() {
             <img src="/favicon.svg" alt="Logo OrthoDesk" width="22" height="22" />
           </div>
           <span className="logoText">
-            <span style={{ color: '#0C447C' }}>Ortho</span>
-            <span style={{ color: '#C9A84C' }}>Desk</span>
+            <span style={{ color: 'var(--brand-strong)' }}>Ortho</span>
+            <span style={{ color: 'var(--accent)' }}>Desk</span>
           </span>
         </div>
 
@@ -183,7 +183,7 @@ export default function Login() {
               {/* Lien mot de passe oublié */}
               <div style={{ textAlign: 'right', marginTop: -4 }}>
                 <button type="button"
-                  style={{ background:'none', border:'none', color:'#0C447C', fontSize:12, cursor:'pointer', textDecoration:'underline', fontFamily:'inherit', padding:0 }}
+                  style={{ background:'none', border:'none', color:'var(--brand)', fontSize:12, cursor:'pointer', textDecoration:'underline', fontFamily:'inherit', padding:0 }}
                   onClick={() => { setForgotMode(true); setResetEmail(email); setError(''); setResetSuccess(false) }}>
                   Mot de passe oublié ?
                 </button>
@@ -198,7 +198,7 @@ export default function Login() {
 
             <p style={{ textAlign:'center', marginTop:'1.2rem', fontSize:'0.82rem', color:'#888' }}>
               L'accès à OrthoDesk se fait sur invitation.<br/>
-              <a href="/#contact" style={{ color:'#0C447C', textDecoration:'underline' }}>
+              <a href="/#contact" style={{ color:'var(--brand)', textDecoration:'underline' }}>
                 Contactez-nous pour rejoindre la beta.
               </a>
             </p>
@@ -215,10 +215,10 @@ export default function Login() {
                 <div style={{ width:60, height:60, borderRadius:'50%', background:'#E8F5EE', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>
                   ✓
                 </div>
-                <div style={{ fontFamily:'Georgia, serif', fontSize:18, color:'#0C447C' }}>
+                <div style={{ fontFamily:'Georgia, serif', fontSize:18, color:'#343A40' }}>
                   Mot de passe modifié
                 </div>
-                <div style={{ fontSize:13, color:'#4A6080', lineHeight:1.7, maxWidth:330 }}>
+                <div style={{ fontSize:13, color:'#5B6268', lineHeight:1.7, maxWidth:330 }}>
                   Votre nouveau mot de passe est enregistré. Vous pouvez vous connecter.
                 </div>
               </div>
@@ -247,10 +247,10 @@ export default function Login() {
                 <div style={{ width:60, height:60, borderRadius:'50%', background:'#E8F5EE', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, color:'#1D7A5A' }}>
                   @
                 </div>
-                <div style={{ fontFamily:'Georgia, serif', fontSize:18, color:'#0C447C' }}>
+                <div style={{ fontFamily:'Georgia, serif', fontSize:18, color:'#343A40' }}>
                   Vérifiez votre email
                 </div>
-                <div style={{ fontSize:13, color:'#4A6080', lineHeight:1.7, maxWidth:330 }}>
+                <div style={{ fontSize:13, color:'#5B6268', lineHeight:1.7, maxWidth:330 }}>
                   Si cette adresse correspond à un compte, un email de récupération a été envoyé à <strong>{resetEmail}</strong>. Saisissez le code indiqué dans cet email.
                 </div>
 

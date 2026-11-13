@@ -4,10 +4,10 @@
   flex-direction: column;
   align-items: center;
   padding: 40px 20px;
-  color: #1A2744;
+  color: var(--text-primary);
   background:
-    radial-gradient(ellipse at 12% 14%, rgba(201, 168, 76, 0.12), transparent 35%),
-    #F5F8FC;
+    radial-gradient(ellipse at 12% 14%, rgba(169, 186, 170, 0.12), transparent 35%),
+    var(--page-bg);
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
 }
 
@@ -29,15 +29,14 @@
   padding: 30px;
   margin-bottom: 18px;
   background: #fff;
-  border: 1px solid #E5ECF3;
-  border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(26, 39, 68, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 9px;
 }
 
 .adminCard h2,
 .adminCard h3 {
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
-  color: #0C447C;
+  color: var(--brand-strong);
   letter-spacing: -0.25px;
 }
 
@@ -51,24 +50,24 @@
   flex: 1;
   padding: 11px 14px;
   border: 1.5px solid #DCE5EE;
-  border-radius: 10px;
-  color: #1A2744;
+  border-radius: 8px;
+  color: #343A40;
   font-size: 14px;
   outline: none;
   transition: border-color 0.18s, box-shadow 0.18s;
 }
 
 .adminInviteEmail:focus {
-  border-color: #81A6CA;
-  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
+  border-color: #B6CCC5;
+  box-shadow: 0 0 0 3px rgba(123, 163, 157, 0.1);
 }
 
 .adminInviteSubmit {
   padding: 11px 18px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   color: #fff;
-  background: #0C447C;
+  background: var(--brand);
   font-size: 13px;
   font-weight: 700;
   font-family: inherit;
@@ -78,8 +77,8 @@
 }
 
 .adminInviteSubmit:hover:not(:disabled) {
-  background: #0A3660;
-  box-shadow: 0 4px 12px rgba(12, 68, 124, 0.18);
+  background: var(--brand-strong);
+  box-shadow: 0 4px 12px rgba(123, 163, 157, 0.18);
 }
 
 .adminInviteSubmit:disabled {
@@ -100,7 +99,7 @@
 
   .adminCard {
     padding: 22px 18px;
-    border-radius: 15px;
+    border-radius: 9px;
   }
 
   .adminInviteForm {

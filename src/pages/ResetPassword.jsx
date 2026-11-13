@@ -5,7 +5,7 @@ import './Login.css'
 
 function EyeIcon({ show, size = 20 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#0C447C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="var(--brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       {show ? (
         <>
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -88,8 +88,8 @@ export default function ResetPassword() {
             <img src="/favicon.svg" alt="Logo OrthoDesk" width="22" height="22" />
           </div>
           <span className="logoText">
-            <span style={{ color:'#0C447C' }}>Ortho</span>
-            <span style={{ color:'#C9A84C' }}>Desk</span>
+            <span style={{ color:'var(--brand-strong)' }}>Ortho</span>
+            <span style={{ color:'var(--accent)' }}>Desk</span>
           </span>
         </div>
 
@@ -100,10 +100,10 @@ export default function ResetPassword() {
             <div style={{ width:60, height:60, borderRadius:'50%', background:'#E8F5EE', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28 }}>
               ✅
             </div>
-            <div style={{ fontFamily:'Georgia, serif', fontSize:18, color:'#0C447C' }}>
+            <div style={{ fontSize:18, fontWeight:700, color:'var(--brand-strong)' }}>
               Mot de passe mis à jour !
             </div>
-            <div style={{ fontSize:13, color:'#4A6080', lineHeight:1.7 }}>
+            <div style={{ fontSize:13, color:'#5B6268', lineHeight:1.7 }}>
               Vous allez être redirigée vers votre cabinet dans quelques secondes…
             </div>
           </div>

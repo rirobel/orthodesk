@@ -67,8 +67,8 @@ async function exportFacturePDF(fac, userId) {
   const { jsPDF } = window.jspdf
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
 
-  const BLEU       = [12, 68, 124]
-  const BLEU_LIGHT = [235, 242, 249]
+  const BLEU       = [23, 106, 103]
+  const BLEU_LIGHT = [231, 248, 250]
   const GRIS       = [138, 155, 176]
   const NOIR       = [26, 39, 68]
   const BLANC      = [255, 255, 255]
@@ -81,7 +81,7 @@ async function exportFacturePDF(fac, userId) {
   }
 
   const W = 210
-  const headerFill = hexToRgb(profil?.couleur_principale || '#0C447C', BLEU)
+  const headerFill = hexToRgb(profil?.couleur_principale || '#7BA39D', BLEU)
   const headerText = hexToRgb(profil?.couleur_texte || '#FFFFFF', BLANC)
   const logoData   = profil?.logo_url ? await loadImageDataUrl(profil.logo_url) : null
   const logoSize   = 24
@@ -481,7 +481,7 @@ export default function Facturation({ session }) {
       {!selected ? (
         <div style={S.emptyDetail}>
           <div style={{ fontSize: 48, opacity: .25 }}>🧾</div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: '#4A6080' }}>Sélectionnez une facture</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#5B6268' }}>Sélectionnez une facture</div>
           <div style={{ fontSize: 12, color: '#8A9BB0' }}>pour voir le détail</div>
           {!isMobile && (
             <button style={{ ...S.addBtn, marginTop: 16 }} onClick={openNew}>+ Nouvelle facture</button>
@@ -505,7 +505,7 @@ export default function Facturation({ session }) {
                   {STATUTS[selected.statut_paiement]}
                 </span>
                 {selected.moyen_paiement && (
-                  <span style={{ ...S.pdTag, background: '#EBF2F9', color: '#185FA5' }}>
+                  <span style={{ ...S.pdTag, background: '#EEF1F3', color: '#5B6268' }}>
                     {selected.moyen_paiement}
                   </span>
                 )}
@@ -576,7 +576,7 @@ export default function Facturation({ session }) {
           {selected.notes_paiement && (
             <div style={{ ...S.pdCard, marginBottom: 0 }}>
               <div style={S.pdCardTitle}>Notes</div>
-              <div style={{ fontSize: 13, color: '#1A2744', lineHeight: 1.7 }}>{selected.notes_paiement}</div>
+              <div style={{ fontSize: 13, color: '#343A40', lineHeight: 1.7 }}>{selected.notes_paiement}</div>
             </div>
           )}
 
@@ -592,11 +592,11 @@ export default function Facturation({ session }) {
                     const sc = STATUT_COLORS[f.statut_paiement] || STATUT_COLORS.annulé
                     return (
                       <div key={f.id} style={S.autreItem} onClick={() => setSelectedId(f.id)}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: '#4A6080', width: 90, flexShrink: 0 }}>{fmtDate(f.date_seance)}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#5B6268', width: 90, flexShrink: 0 }}>{fmtDate(f.date_seance)}</div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: '#1A2744' }}>{f.type_seance}</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: '#343A40' }}>{f.type_seance}</div>
                         </div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#0C447C' }}>{fmt(f.montant)}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#7BA39D' }}>{fmt(f.montant)}</div>
                         <span style={{ ...S.statBadge, background: sc.bg, color: sc.color, marginLeft: 8 }}>
                           {STATUTS[f.statut_paiement]}
                         </span>
@@ -629,7 +629,7 @@ export default function Facturation({ session }) {
       {/* MODAL */}
       {modal && (
         <div style={S.overlay} onClick={() => setModal(false)}>
-          <div style={{ ...S.modalBox, maxWidth: isMobile ? '100%' : 560, margin: isMobile ? 0 : 'auto', borderRadius: isMobile ? '16px 16px 0 0' : 16 }}
+          <div style={{ ...S.modalBox, maxWidth: isMobile ? '100%' : 560, margin: isMobile ? 0 : 'auto', borderRadius: isMobile ? '9px 9px 0 0' : 9 }}
             onClick={e => e.stopPropagation()}>
             <div style={S.modalHead}>
               <span style={S.modalTitle}>{editFac ? 'Modifier la facture' : 'Nouvelle facture'}</span>
@@ -745,73 +745,73 @@ export default function Facturation({ session }) {
 }
 
 const S = {
-  wrap:         { flex: 1, display: 'flex', overflow: 'hidden' },
-  listPanel:    { borderRight: '1px solid #DDE5EF', background: '#fff', display: 'flex', flexDirection: 'column', flexShrink: 0 },
+  wrap:         { flex: 1, display: 'flex', overflow: 'hidden', background: 'var(--page-bg)' },
+  listPanel:    { borderRight: '1px solid var(--line)', background: 'var(--surface)', display: 'flex', flexDirection: 'column', flexShrink: 0 },
   statsBar:     { display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #DDE5EF', gap: 4 },
   statItem:     { flex: 1, textAlign: 'center' },
-  statVal:      { fontSize: 13, fontWeight: 700, color: '#0C447C' },
+  statVal:      { fontSize: 13, fontWeight: 700, color: 'var(--brand-strong)' },
   statLbl:      { fontSize: 10, color: '#8A9BB0', marginTop: 1 },
   statDivider:  { width: 1, height: 28, background: '#DDE5EF' },
   listHeader:   { padding: '12px 16px 10px', borderBottom: '1px solid #DDE5EF' },
   search:       { width: '100%', padding: '8px 12px', border: '1.5px solid #DDE5EF', borderRadius: 8, fontSize: 13, fontFamily: 'DM Sans, sans-serif', outline: 'none', boxSizing: 'border-box' },
   filters:      { display: 'flex', gap: 5, marginTop: 8, flexWrap: 'wrap' },
   filterBtn:    { padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, border: '1.5px solid #DDE5EF', background: 'none', cursor: 'pointer', color: '#8A9BB0', fontFamily: 'DM Sans, sans-serif' },
-  filterActive: { borderColor: '#0C447C', background: '#0C447C', color: '#fff' },
+  filterActive: { borderColor: '#7BA39D', background: '#7BA39D', color: '#fff' },
   listCount:    { fontSize: 11, color: '#8A9BB0', padding: '6px 16px', fontStyle: 'italic' },
   list:         { flex: 1, overflowY: 'auto', padding: '6px 8px' },
   emptyMsg:     { padding: '20px', textAlign: 'center', color: '#8A9BB0', fontSize: 13 },
   facCard:      { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: '1.5px solid transparent', marginBottom: 4, transition: 'all .12s' },
-  facCardSel:   { background: '#EBF2F9', borderColor: '#3B82C4' },
+  facCardSel:   { background: '#EEF1F3', borderColor: '#707A82' },
   facLeft:      { display: 'flex', flexDirection: 'column', gap: 3 },
   facRight:     { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 },
-  facPatient:   { fontSize: 13, fontWeight: 600, color: '#1A2744' },
+  facPatient:   { fontSize: 13, fontWeight: 600, color: '#343A40' },
   facMeta:      { fontSize: 11, color: '#8A9BB0' },
   facDate:      { fontSize: 11, color: '#6B7FA0', fontWeight: 500 },   // ← date visible, plus lisible
-  facMontant:   { fontSize: 13, fontWeight: 700, color: '#0C447C' },
+  facMontant:   { fontSize: 13, fontWeight: 700, color: '#7BA39D' },
   statBadge:    { fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap' },
   // Pagination
   pagination:   { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '10px 12px', borderTop: '1px solid #DDE5EF', flexShrink: 0 },
-  pageBtn:      { minWidth: 30, height: 30, borderRadius: 6, border: '1.5px solid #DDE5EF', background: '#fff', color: '#4A6080', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  pageBtnActive:{ background: '#0C447C', color: '#fff', borderColor: '#0C447C' },
+  pageBtn:      { minWidth: 30, height: 30, borderRadius: 6, border: '1.5px solid #DDE5EF', background: '#fff', color: '#5B6268', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  pageBtnActive:{ background: '#7BA39D', color: '#fff', borderColor: '#7BA39D' },
   // Détail
-  detail:       { flex: 1, overflowY: 'auto', background: '#F0F4F9', padding: 20 },
+  detail:       { flex: 1, overflowY: 'auto', background: 'var(--page-bg)', padding: 20 },
   emptyDetail:  { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, color: '#8A9BB0' },
   detailInner:  { display: 'flex', flexDirection: 'column', gap: 14 },
-  pdHeader:     { background: '#fff', borderRadius: 12, padding: 20, display: 'flex', alignItems: 'flex-start', gap: 16, boxShadow: '0 2px 12px rgba(12,68,124,0.08)' },
+  pdHeader:     { background: '#fff', border: '1px solid var(--line)', borderRadius: 9, padding: 20, display: 'flex', alignItems: 'flex-start', gap: 16 },
   facIcon:      { fontSize: 40, lineHeight: 1 },
-  pdName:       { fontFamily: 'Georgia, serif', fontSize: 22, color: '#0C447C' },
+  pdName:       { fontSize: 22, fontWeight: 750, color: '#343A40' },
   pdMeta:       { fontSize: 12, color: '#8A9BB0', marginTop: 3 },
   pdTags:       { display: 'flex', gap: 6, marginTop: 7, flexWrap: 'wrap' },
   pdTag:        { fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 },
-  bigMontant:   { fontFamily: 'Georgia, serif', fontSize: 26, fontWeight: 700, color: '#0C447C' },
-  editBtn:      { padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: '1.5px solid #DDE5EF', background: '#fff', color: '#0C447C', cursor: 'pointer' },
+  bigMontant:   { fontSize: 26, fontWeight: 750, color: '#7BA39D' },
+  editBtn:      { padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: '1px solid #D9E2EB', background: '#fff', color: '#555B60', cursor: 'pointer' },
   pdfBtn:       { padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: '1.5px solid #1D7A5A', background: '#E8F5EE', color: '#1D7A5A', cursor: 'pointer' },
-  addBtn:       { padding: '8px 14px', background: '#0C447C', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
+  addBtn:       { padding: '8px 14px', background: '#7BA39D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
   pdGrid:       { display: 'grid', gap: 14 },
-  pdCard:       { background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 12px rgba(12,68,124,0.08)' },
+  pdCard:       { background: '#fff', border: '1px solid var(--line)', borderRadius: 9, padding: 16 },
   pdCardTitle:  { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A9BB0', marginBottom: 10 },
   pdField:      { marginBottom: 9 },
   pdFl:         { fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8A9BB0' },
-  pdFv:         { fontSize: 13, color: '#1A2744', fontWeight: 500, marginTop: 1 },
+  pdFv:         { fontSize: 13, color: '#343A40', fontWeight: 500, marginTop: 1 },
   statQuickBtn: { padding: '5px 12px', borderRadius: 20, fontSize: 11, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' },
   autreItem:    { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: '#F0F4F9', borderRadius: 7, cursor: 'pointer', flexWrap: 'wrap' },
   // Modal
   overlay:      { position: 'fixed', inset: 0, background: 'rgba(10,30,60,0.45)', zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 0 },
-  modalBox:     { background: '#fff', width: '100%', boxShadow: '0 8px 32px rgba(12,68,124,0.18)', display: 'flex', flexDirection: 'column', maxHeight: '92vh' },
+  modalBox:     { background: '#fff', border: '1px solid var(--line)', width: '100%', boxShadow: '0 8px 28px rgba(52,58,64,0.12)', display: 'flex', flexDirection: 'column', maxHeight: '92vh' },
   modalHead:    { padding: '18px 22px 14px', borderBottom: '1px solid #DDE5EF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 },
-  modalTitle:   { fontFamily: 'Georgia, serif', fontSize: 19, color: '#0C447C' },
+  modalTitle:   { fontSize: 19, fontWeight: 700, color: '#343A40' },
   closeBtn:     { width: 28, height: 28, background: '#F0F4F9', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 14, color: '#8A9BB0' },
   modalBody:    { padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 11, overflowY: 'auto' },
   modalFoot:    { padding: '12px 22px 16px', display: 'flex', gap: 8, justifyContent: 'flex-end', borderTop: '1px solid #DDE5EF', flexShrink: 0 },
   sectionLabel: { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A9BB0', marginTop: 4, marginBottom: 2 },
   fg:           { display: 'flex', flexDirection: 'column', gap: 4 },
-  fl:           { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#4A6080' },
+  fl:           { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#5B6268' },
   fi:           { padding: '8px 12px', border: '1.5px solid #DDE5EF', borderRadius: 8, fontSize: 13, fontFamily: 'DM Sans, sans-serif', outline: 'none', width: '100%', boxSizing: 'border-box' },
   frow:         { display: 'grid', gap: 12 },
-  patDrop:      { position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid #DDE5EF', borderRadius: 8, zIndex: 10, boxShadow: '0 4px 16px rgba(12,68,124,0.10)', overflow: 'hidden' },
-  patDropItem:  { padding: '9px 14px', fontSize: 13, cursor: 'pointer', color: '#1A2744', borderBottom: '1px solid #F0F4F9' },
+  patDrop:      { position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1.5px solid #DDE5EF', borderRadius: 8, zIndex: 10, boxShadow: '0 4px 16px rgba(52,58,64,0.10)', overflow: 'hidden' },
+  patDropItem:  { padding: '9px 14px', fontSize: 13, cursor: 'pointer', color: '#343A40', borderBottom: '1px solid #F0F4F9' },
   dangerBtn:    { padding: '8px 14px', background: '#FCEBEB', color: '#C0392B', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', marginRight: 'auto' },
-  cancelBtn:    { padding: '8px 14px', background: '#F0F4F9', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#4A6080', cursor: 'pointer' },
-  saveBtn:      { padding: '8px 18px', background: '#0C447C', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
-  backBtn:      { display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 14, padding: '6px 12px', background: '#fff', border: '1.5px solid #DDE5EF', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#0C447C', cursor: 'pointer' },
+  cancelBtn:    { padding: '8px 14px', background: '#F0F4F9', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#5B6268', cursor: 'pointer' },
+  saveBtn:      { padding: '8px 18px', background: '#7BA39D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
+  backBtn:      { display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 14, padding: '6px 12px', background: '#fff', border: '1px solid #D9E2EB', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#7BA39D', cursor: 'pointer' },
 }
